@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class Usuario {
 
-    public String id;
+    public Long id;
     public String nombre;
     public String email;
 }

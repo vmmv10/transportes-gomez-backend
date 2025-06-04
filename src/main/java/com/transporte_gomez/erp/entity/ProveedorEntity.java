@@ -1,9 +1,12 @@
 package com.transporte_gomez.erp.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.ZonedDateTime;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "proveedores", schema = "qa")
 public class ProveedorEntity {
