@@ -24,12 +24,6 @@ public class DocumentoEntity {
     @Column(name = "numero")
     private Long numero;
 
-    @Column(name = "tipo_codigo")
-    private Integer tipoCodigo;
-
-    @Column(name = "tipo_nombre", length = Integer.MAX_VALUE)
-    private String tipoNombre;
-
     @Column(name = "imagen")
     private Long imagen;
 
@@ -40,5 +34,13 @@ public class DocumentoEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proveedor")
     private ProveedorEntity proveedor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "escuela")
+    private EscuelaEntity escuela;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo")
+    private DocumentoTipoEntity tipo;
 
 }

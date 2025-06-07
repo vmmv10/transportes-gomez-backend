@@ -6,7 +6,8 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "usuarios", schema = "qa")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioEntity {
@@ -15,15 +16,23 @@ public class UsuarioEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nombre")
+
+    @Column(name = "nombre", length = Integer.MAX_VALUE)
     private String nombre;
 
-    @Column(name = "rol")
+    @Column(name = "rol", length = Integer.MAX_VALUE)
     private String rol;
 
-    @Column(name = "informacion_contacto")
+    @Column(name = "informacion_contacto", length = Integer.MAX_VALUE)
     private String informacionContacto;
 
-    @Column(name = "telefono")
+    @Column(name = "telefono", length = Integer.MAX_VALUE)
     private String telefono;
+
+    @Column(name = "auth0id", nullable = false, length = Integer.MAX_VALUE)
+    private String auth0id;
+
+    @Column(name = "email", length = Integer.MAX_VALUE)
+    private String email;
+
 }

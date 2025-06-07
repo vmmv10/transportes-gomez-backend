@@ -14,7 +14,7 @@ public class UsuarioAdapter {
 
     public Usuario getUsuario(UsuarioEntity usuarioEntity) {
         Usuario usuario = new Usuario();
-        usuario.setId(usuario.getId());
+        usuario.setId(usuarioEntity.getId());
         usuario.setNombre(usuarioEntity.getNombre());
 
         return usuario;

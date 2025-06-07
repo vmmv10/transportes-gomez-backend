@@ -3,6 +3,7 @@ package com.transporte_gomez.erp.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.ZonedDateTime;
 @Getter
@@ -35,4 +36,9 @@ public class ProveedorEntity {
 
     @Column(name = "representante")
     private String representante;
+
+    @ColumnDefault("true")
+    @Column(name = "activo", nullable = false)
+    private Boolean activo = false;
+
 }
