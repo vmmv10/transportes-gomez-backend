@@ -13,4 +13,6 @@ public interface EscuelaRepository extends JpaRepository<EscuelaEntity, Long> {
     @Query("SELECT DISTINCT e.comuna FROM EscuelaEntity e WHERE e.comuna IS NOT NULL ORDER BY e.comuna")
     List<String> findDistinctComunas();
 
+    @Query("select e from EscuelaEntity e where e.rbd = ?1")
+    EscuelaEntity findByRbd(String rbd);
 }

@@ -23,11 +23,14 @@ public class AuditoriaEntity {
     @Column(name = "usuario_id")
     private Long usuarioId;
 
-    @Column(name = "modulo_ud")
-    private Long moduloUd;
+    @Column(name = "modulo_id")
+    private Integer moduloId;
 
     @ColumnDefault("now()")
     @Column(name = "fecha")
     private OffsetDateTime fecha;
+
+    @Column(name = "entidad_id", nullable = false)
+    private Long entidadId;
 
 }

@@ -2,6 +2,7 @@ package com.transporte_gomez.erp.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.ZonedDateTime;
 
@@ -45,4 +46,18 @@ public class EscuelaEntity {
 
     @Column(name = "sostenedor_rut")
     private String sostenedorRut;
+
+    @Column(name = "rbd_provincia")
+    private Integer rbdProvincia;
+
+    @Column(name = "tipo", length = Integer.MAX_VALUE)
+    private String tipo;
+
+    @Column(name = "red_fija", length = Integer.MAX_VALUE)
+    private String redFija;
+
+    @ColumnDefault("false")
+    @Column(name = "activo", nullable = false)
+    private Boolean activo = false;
+
 }

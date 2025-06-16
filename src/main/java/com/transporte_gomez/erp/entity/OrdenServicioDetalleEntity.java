@@ -1,10 +1,14 @@
 package com.transporte_gomez.erp.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "ordenes_servicios_detalles", schema = "qa")
 public class OrdenServicioDetalleEntity {
@@ -16,17 +20,12 @@ public class OrdenServicioDetalleEntity {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @Column(name = "descripcion")
-    private String descripcion;
+    @Column(name = "cantidad")
+    private Integer cantidad;
 
-    @Column(name = "precio", precision = 10, scale = 2)
-    private BigDecimal precio;
-
-    @Column(name = "creado_en")
-    private LocalDateTime creadoEn = LocalDateTime.now();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ordenes_servicios", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "orden_servicio", nullable = false)
     private OrdenServicioEntity ordenServicio;
+
 
 }

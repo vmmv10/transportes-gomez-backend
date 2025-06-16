@@ -43,4 +43,12 @@ public class DocumentoEntity {
     @JoinColumn(name = "tipo")
     private DocumentoTipoEntity tipo;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "bodega", nullable = false)
+    private BodegaEntity bodega;
+
+    @ColumnDefault("false")
+    @Column(name = "entregado", nullable = false)
+    private Boolean entregado = false;
+
 }

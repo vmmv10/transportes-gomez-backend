@@ -34,10 +34,15 @@ public class DocumentoController {
         return documentoService.getById(id);
     }
 
+    @GetMapping("/{numero}/{tipo}")
+    public Documento getDocumentoByNumero(@PathVariable Long numero, @PathVariable Integer tipo) {
+        return documentoService.getByNumero(numero, tipo);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Documento createDocumento(
             @RequestPart("documento") Documento documento,
-            @RequestPart("files") List<MultipartFile> files,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal Jwt jwt) {
 
         Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
@@ -50,7 +55,7 @@ public class DocumentoController {
     public Documento updateDocumento(
             @PathVariable Long id,
             @RequestPart("documento") Documento documento,
-            @RequestPart("files") List<MultipartFile> files,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal Jwt jwt) {
 
         Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);

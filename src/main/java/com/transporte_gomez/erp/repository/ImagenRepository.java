@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface ImagenRepository extends JpaRepository<ImagenEntity, Long> {
     @Query("select i from ImagenEntity i where i.entidadTipo = ?1 and i.entidadId = ?2")
-    List<ImagenEntity> findByEntidadTipoAndEntidadId(String entidadTipo, Long entidadId);
+    List<ImagenEntity> findByEntidadTipoAndEntidadId(Integer entidadTipo, Long entidadId);
 }

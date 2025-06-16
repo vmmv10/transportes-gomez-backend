@@ -18,7 +18,7 @@ public class ImagenEntity {
     private Long id;
 
     @Column(name = "entidad_tipo", nullable = false, length = 50)
-    private String entidadTipo;
+    private Integer entidadTipo;
 
     @Column(name = "entidad_id", nullable = false)
     private Long entidadId;

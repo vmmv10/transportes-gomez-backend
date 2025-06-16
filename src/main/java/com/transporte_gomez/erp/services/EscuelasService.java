@@ -8,6 +8,7 @@ import com.transporte_gomez.erp.dto.Establecimiento;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
 import com.transporte_gomez.erp.repository.EscuelaRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +19,7 @@ import java.util.Objects;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class EscuelasService {
 
     private final EscuelaRepository escuelaRepository;
@@ -46,26 +48,26 @@ public class EscuelasService {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), "ISO-8859-1")) {
             CsvToBean<Establecimiento> csvToBean = new CsvToBeanBuilder<Establecimiento>(reader)
                     .withType(Establecimiento.class)
-                    .withSeparator(';')
+                    .withSeparator(',')
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
 
             List<Establecimiento> establecimientos = csvToBean.parse();
             List<EscuelaEntity> escuelaEntities = new ArrayList<>();
             for (Establecimiento establecimiento : establecimientos) {
-                if(Objects.equals(establecimiento.getCodProRbd(), "102")) {
-                    EscuelaEntity escuelaEntity = new EscuelaEntity();
-                    escuelaEntity.setNombre(establecimiento.getNombreRbd());
-                    escuelaEntity.setLatitud(establecimiento.getLatitud());
-                    escuelaEntity.setLongitud(establecimiento.getLongitud());
-                    escuelaEntity.setRbd(establecimiento.getRbd());
-                    escuelaEntity.setComuna(establecimiento.getNombreComRbd());
-                    escuelaEntity.setSostenedorRut(establecimiento.getRutSostenedor());
+                EscuelaEntity escuelaEntity = escuelaRepository.findByRbd(establecimiento.getRbd());
+
+                if (escuelaEntity != null) {
+                    escuelaEntity.setActivo(true);
                     escuelaEntities.add(escuelaEntity);
+                } else {
+                    log.warn("No se encontró escuela con RBD: {} nombre {}", establecimiento.getRbd(), establecimiento.getNombre());
                 }
+
             }
 
             if(!escuelaEntities.isEmpty()) {
+                log.info("Actualizando escuelas con RBDs: {}",escuelaEntities.size());
                 escuelaRepository.saveAll(escuelaEntities);
             }
         }

@@ -14,7 +14,6 @@ public class ImagenAdapter {
     public Imagen getImagen(ImagenEntity imagenEntity) {
         Imagen imagen = new Imagen();
         imagen.setId(imagenEntity.getId());
-        imagen.setEntidadTipo(imagenEntity.getEntidadTipo());
         imagen.setEntidadId(imagenEntity.getEntidadId());
         imagen.setNombreOriginal(imagenEntity.getNombreOriginal());
         imagen.setRuta(imagenEntity.getRuta());

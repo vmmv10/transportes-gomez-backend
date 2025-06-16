@@ -4,9 +4,11 @@ import com.transporte_gomez.erp.adapter.DocumentoAdapter;
 import com.transporte_gomez.erp.dto.Documento;
 import com.transporte_gomez.erp.dto.DocumentoFiltro;
 import com.transporte_gomez.erp.entity.DocumentoEntity;
+import com.transporte_gomez.erp.enums.Modulo;
 import com.transporte_gomez.erp.repository.DocumentoRepository;
 import com.transporte_gomez.erp.specification.DocumentoSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DocumentoService {
@@ -37,14 +40,22 @@ public class DocumentoService {
                 .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
     }
 
+    public Documento getByNumero(Long id, Integer tipo) {
+        DocumentoEntity documentoEntity = documentoRepository.findByNumeroAndTipo_Codigo(id, tipo);
+        if (documentoEntity == null) {
+            throw new IllegalArgumentException("Documento no encontrado con ID: " + id + " y tipo: " + tipo);
+        }
+        return documentoAdapter.getDocumento(documentoEntity);
+    }
+
     public Documento createDocumento(Documento documento, List<MultipartFile> files) {
         DocumentoEntity documentoEntity = documentoAdapter.createEntity(documento);
         DocumentoEntity documentoEntitySave = documentoRepository.save(documentoEntity);
 
-        if (!files.isEmpty()) {
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 try {
-                    imagenService.guardarImagen(file, "Documento", documentoEntitySave.getId(), rutaDocumentos);
+                    imagenService.guardarImagen(file, Modulo.DOCUMENTO.getCodigo(), documentoEntitySave.getId(), rutaDocumentos);
                 } catch (Exception e) {
                     throw new RuntimeException("Error al guardar la imagen: " + e.getMessage(), e);
                 }
@@ -57,11 +68,11 @@ public class DocumentoService {
     public Documento updateDocumento(Long id, Documento documento, List<MultipartFile> files) {
         DocumentoEntity documentoEntity = documentoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
-
-        if (!files.isEmpty()) {
+        log.info("Actualizando documento con ID: {}", id);
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 try {
-                    imagenService.guardarImagen(file, "Documento", documentoEntity.getId(), rutaDocumentos);
+                    imagenService.guardarImagen(file, Modulo.DOCUMENTO.getCodigo(), documentoEntity.getId(), rutaDocumentos);
                 } catch (Exception e) {
                     throw new RuntimeException("Error al guardar la imagen: " + e.getMessage(), e);
                 }

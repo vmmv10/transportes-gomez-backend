@@ -5,23 +5,27 @@ import com.transporte_gomez.erp.entity.AuditoriaEntity;
 import com.transporte_gomez.erp.entity.DocumentoTipoEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+
 @Service
 public class AuditoriaAdapter {
 
-    public AuditoriaEntity getAuditoria(AuditoriaEntity auditoriaEntity) {
-        AuditoriaEntity auditoria = new AuditoriaEntity();
+    public Auditoria getAuditoria(AuditoriaEntity auditoriaEntity) {
+        Auditoria auditoria = new Auditoria();
         auditoria.setId(auditoriaEntity.getId());
         auditoria.setFecha(auditoriaEntity.getFecha());
         auditoria.setOperacion(auditoriaEntity.getOperacion());
         return auditoria;
     }
 
-        public AuditoriaEntity getAuditoria(Auditoria auditoria, Long usuarioId, Long moduloUd) {
+    public AuditoriaEntity createAuditoria(Auditoria auditoria) {
         AuditoriaEntity auditoriaEntity = new AuditoriaEntity();
-        auditoriaEntity.setId(auditoria.getId());
         auditoriaEntity.setOperacion(auditoria.getOperacion());
-        auditoriaEntity.setUsuarioId(usuarioId);
-        auditoriaEntity.setModuloUd(moduloUd);
+        auditoriaEntity.setUsuarioId(auditoria.getUsuario());
+        auditoriaEntity.setModuloId(auditoria.getModulo());
+        auditoriaEntity.setEntidadId(auditoria.getEntidad());
+        auditoriaEntity.setFecha(OffsetDateTime.now());
         return auditoriaEntity;
     }
+
 }

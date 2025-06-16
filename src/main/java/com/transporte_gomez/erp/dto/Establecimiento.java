@@ -6,34 +6,25 @@ import lombok.Data;
 @Data
 public class Establecimiento {
 
-    @CsvBindByName(column = "AGNO")
-    private int agno;
-
     @CsvBindByName(column = "RBD")
     private String rbd;
 
-    @CsvBindByName(column = "DGV_RBD")
-    private int dgvRbd;
+    @CsvBindByName(column = "ESTABLECIMIENTO EDUCACIONAL")
+    private String nombre;
 
-    @CsvBindByName(column = "NOM_RBD")
-    private String nombreRbd;
+    @CsvBindByName(column = "COMUNA")
+    private String comuna;
 
-    @CsvBindByName(column = "RUT_SOSTENEDOR")
-    private String rutSostenedor;
+    @CsvBindByName(column = "DIRECTOR")
+    private String director;
 
-    @CsvBindByName(column = "NOM_REG_RBD_A")
-    private String nombreRegion;
+    @CsvBindByName(column = "TELEFONO")
+    private String telefono;
 
-    @CsvBindByName(column = "COD_PRO_RBD")
-    private String codProRbd;
+    @CsvBindByName(column = "CORREO")
+    private String correo;
 
-    @CsvBindByName(column = "LONGITUD")
-    private String longitud;
-
-    @CsvBindByName(column = "LATITUD")
-    private String latitud;
-
-    @CsvBindByName(column = "NOM_COM_RBD ")
-    private String nombreComRbd;
+    @CsvBindByName(column = "FIJA")
+    private String fija;
 
 }

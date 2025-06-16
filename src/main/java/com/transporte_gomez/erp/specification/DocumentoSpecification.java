@@ -33,6 +33,14 @@ public class DocumentoSpecification {
                 predicates = cb.and(predicates, cb.lessThanOrEqualTo(root.get("fechaCreacion"), filtro.getFechaCreacionHasta()));
             }
 
+            if (filtro.getProveedor() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("proveedor").get("id"), filtro.getProveedor()));
+            }
+
+            if (filtro.getEscuela() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("escuela").get("id"), filtro.getEscuela()));
+            }
+
             return predicates;
         };
     }

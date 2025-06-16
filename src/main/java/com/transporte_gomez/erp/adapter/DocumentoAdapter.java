@@ -4,10 +4,7 @@ import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.entity.DocumentoEntity;
 import com.transporte_gomez.erp.entity.DocumentoTipoEntity;
 import com.transporte_gomez.erp.entity.UsuarioEntity;
-import com.transporte_gomez.erp.repository.DocumentoTipoRepository;
-import com.transporte_gomez.erp.repository.EscuelaRepository;
-import com.transporte_gomez.erp.repository.ProveedorRepository;
-import com.transporte_gomez.erp.repository.UsuarioRepository;
+import com.transporte_gomez.erp.repository.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,11 +18,13 @@ public class DocumentoAdapter {
     private final ProveedorRepository proveedorRepository;
     private final EscuelaRepository escuelaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final BodegaRepository bodegaRepository;
 
     public Documento getDocumento(DocumentoEntity documentoEntity) {
         Documento documento = new Documento();
         documento.setId(documentoEntity.getId());
         documento.setNumero(documentoEntity.getNumero());
+        documento.setEntregado(documentoEntity.getEntregado());
 
         Usuario usuario = new Usuario();
         usuario.setId(documentoEntity.getUsuario().getId());
@@ -64,6 +63,14 @@ public class DocumentoAdapter {
         documentoTipo.setCodigo(documentoTipoEntity.getCodigo());
 
         documento.setTipo(documentoTipo);
+
+        if (documentoEntity.getBodega() != null) {
+            Bodega bodega = new Bodega();
+            bodega.setId(documentoEntity.getBodega().getId());
+            bodega.setNombre(documentoEntity.getBodega().getNombre());
+            bodega.setDireccion(documentoEntity.getBodega().getUbicacion());
+            documento.setBodega(bodega);
+        }
         return documento;
     }
 
@@ -90,6 +97,11 @@ public class DocumentoAdapter {
         DocumentoTipoEntity documentoTipoEntity = documentoTipoRepository.getReferenceById(documento.getTipo().getId());
         documentoEntity.setTipo(documentoTipoEntity);
 
+        if (documento.getBodega() != null && documento.getBodega().getId() != null) {
+            documentoEntity.setBodega(bodegaRepository.findById(documento.getBodega().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Bodega no encontrada")));
+        }
+
         return documentoEntity;
     }
 
@@ -109,6 +121,12 @@ public class DocumentoAdapter {
         if (documento.getEscuela() != null && documento.getEscuela().getId() != null) {
             documentoEntity.setEscuela(escuelaRepository.findById(documento.getEscuela().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Escuela no encontrada")));
+        }
+
+        if (documento.getBodega() != null && documento.getBodega().getId() != null) {
+            log.info("Actualizando bodega con ID: {}", documento.getBodega().getId());
+            documentoEntity.setBodega(bodegaRepository.findById(documento.getBodega().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Bodega no encontrada")));
         }
 
         DocumentoTipoEntity documentoTipoEntity = documentoTipoRepository.getReferenceById(documento.getTipo().getId());

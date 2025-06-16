@@ -15,7 +15,7 @@ public class ImagenController {
     private final ImagenService imagenService;
 
     @GetMapping("{entidadTipo}/{entidadId}")
-    public List<Imagen> getImagenesByEntidad(@PathVariable String entidadTipo, @PathVariable Long entidadId) {
+    public List<Imagen> getImagenesByEntidad(@PathVariable Integer entidadTipo, @PathVariable Long entidadId) {
         return imagenService.getImagen(entidadTipo, entidadId);
     }
 

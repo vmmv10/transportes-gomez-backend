@@ -15,4 +15,6 @@ public class Documento {
     private Escuela escuela;
     private List<MultipartFile> files;
     private DocumentoTipo tipo;
+    private Bodega bodega;
+    private boolean entregado;
 }

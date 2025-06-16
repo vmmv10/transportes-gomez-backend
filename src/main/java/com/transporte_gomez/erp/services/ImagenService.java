@@ -25,7 +25,7 @@ public class ImagenService {
     private final ImagenRepository imagenRepository;
     private final ImagenAdapter imagenAdapter;
 
-    public List<Imagen> getImagen(String entidad, Long entidadId) {
+    public List<Imagen> getImagen(Integer entidad, Long entidadId) {
         List<ImagenEntity> imagenEntities = imagenRepository.findByEntidadTipoAndEntidadId(entidad, entidadId);
 
         return imagenEntities.stream()
@@ -33,7 +33,7 @@ public class ImagenService {
                 .toList();
     }
 
-    public void guardarImagen(MultipartFile file, String entidadTipo, Long entidadId, String uploadDir) throws IOException {
+    public void guardarImagen(MultipartFile file, Integer entidadTipo, Long entidadId, String uploadDir) throws IOException {
         // Validaciones
         if (file.isEmpty()) {
             throw new IllegalArgumentException("El archivo está vacío.");
@@ -76,10 +76,10 @@ public class ImagenService {
         imagen.setEntidadId(entidadId);
         imagen.setNombreOriginal(nombreOriginal);
 
-        if (entidadTipo.equals("Documento")) {
+        if (entidadTipo.equals(4)) {
             imagen.setRuta("documentos/normal/" + nombreArchivo);
             imagen.setRutaThumbnail("documentos/thumb/" + nombreThumbnail);
-        } else if (entidadTipo.equals("Orden")) {
+        } else if (entidadTipo.equals(1)) {
             imagen.setRuta("ordenes/normal/" + nombreArchivo);
             imagen.setRutaThumbnail("ordenes/thumb/" + nombreThumbnail);
         }
