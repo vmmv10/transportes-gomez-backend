@@ -25,8 +25,8 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<Usuario> listarUsuarios() {
-        return usuarioService.getAll();
+    public List<Usuario> listarUsuarios(Usuario filtro) {
+        return usuarioService.getAll(filtro);
     }
 
 }

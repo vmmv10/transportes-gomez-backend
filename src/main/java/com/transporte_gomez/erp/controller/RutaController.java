@@ -26,9 +26,24 @@ public class RutaController {
         return rutaService.findById(id);
     }
 
+    @PostMapping()
+    public Ruta create(@RequestBody Ruta ruta) {
+        return rutaService.create(ruta);
+    }
+
+    @PutMapping("/{id}")
+    public Ruta update(@PathVariable Integer id, @RequestBody Ruta ruta) {
+        return rutaService.update(id, ruta);
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         rutaService.delete(id);
+    }
+
+    @DeleteMapping("/{id}/ordenes-servicios/{ordenServicio}")
+    public void deleteEntrega(@PathVariable Integer id, @PathVariable Long ordenServicio) {
+        rutaService.deleteEntrega(id, ordenServicio);
     }
 
 }

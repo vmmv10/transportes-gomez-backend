@@ -1,0 +1,87 @@
+package com.transporte_gomez.erp.services;
+
+import com.transporte_gomez.erp.adapter.EntregaAdapter;
+import com.transporte_gomez.erp.dto.Entrega;
+import com.transporte_gomez.erp.dto.EntregaFiltro;
+import com.transporte_gomez.erp.dto.OrdenServicio;
+import com.transporte_gomez.erp.entity.EntregaEntity;
+import com.transporte_gomez.erp.entity.OrdenServicioEntity;
+import com.transporte_gomez.erp.entity.RutaEntity;
+import com.transporte_gomez.erp.repository.EntregaRepository;
+import com.transporte_gomez.erp.repository.OrdenServicioRepository;
+import com.transporte_gomez.erp.specification.EntregaSpecification;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@RequiredArgsConstructor
+@Service
+public class EntregaServices {
+
+    private final OrdenServicioRepository ordenServicioRepository;
+    private final EntregaRepository entregaRepository;
+    private final EntregaAdapter entregaAdapter;
+
+    public Page<Entrega> getEntregas(Pageable pageable, EntregaFiltro filtro) {
+        return entregaRepository.findAll(EntregaSpecification.conFiltros(filtro), pageable)
+                .map(entregaAdapter::getEntrega);
+    }
+
+    public void crearEntregas(RutaEntity rutaEntity, List<OrdenServicio> ordenServicioList) {
+        for (int i = 0; i < ordenServicioList.size(); i++) {
+            OrdenServicio ordenServicio = ordenServicioList.get(i);
+            OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(ordenServicio.getId())
+                    .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + ordenServicio.getId()));
+
+            EntregaEntity entregaEntity = entregaAdapter.createEntrega(rutaEntity, ordenServicioEntity, i + 1);
+            entregaRepository.save(entregaEntity);
+        }
+
+        // Actualizamos el estado enRuta una sola vez por cada orden
+        for (OrdenServicio ordenServicio : ordenServicioList) {
+            OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(ordenServicio.getId())
+                    .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + ordenServicio.getId()));
+            ordenServicioEntity.setEnRuta(true);
+            ordenServicioRepository.save(ordenServicioEntity);
+        }
+
+    }
+
+    public void updateEntregas(RutaEntity rutaEntity, List<OrdenServicio> ordenServicioList) {
+        for (int i = 0; i < ordenServicioList.size(); i++) {
+            Optional<EntregaEntity> entregaEntity = entregaRepository.findByRuta_IdAndOrdenServicio_Id(rutaEntity.getId(), ordenServicioList.get(i).getId());
+            if (entregaEntity.isPresent()) {
+                // Actualizar entrega existente
+                EntregaEntity existingEntrega = entregaEntity.get();
+                existingEntrega.setOrden(i + 1);
+                entregaRepository.save(existingEntrega);
+            } else {
+                // Crear nueva entrega si no existe
+                OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(ordenServicioList.get(i).getId())
+                        .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada"));
+                EntregaEntity nuevaEntrega = entregaAdapter.createEntrega(rutaEntity, ordenServicioEntity, i + 1);
+                entregaRepository.save(nuevaEntrega);
+                ordenServicioEntity.setEnRuta(true);
+                ordenServicioRepository.save(ordenServicioEntity);
+            }
+        }
+    }
+
+    public void deleteEntrega(Integer id) {
+        entregaRepository.deleteById(id);
+    }
+
+    public void deleteEntregaByRutaAndOrden(Integer ruta, Long orden) {
+        EntregaEntity entregaEntity = entregaRepository.findByRuta_IdAndOrdenServicio_Id(ruta, orden)
+                .orElseThrow(() -> new RuntimeException("Entrega not found for ruta: " + ruta + " and orden: " + orden));
+        entregaRepository.delete(entregaEntity);
+
+        OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
+        ordenServicioEntity.setEnRuta(false);
+        ordenServicioRepository.save(ordenServicioEntity);
+    }
+}

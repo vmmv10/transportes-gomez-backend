@@ -4,6 +4,7 @@ import com.transporte_gomez.erp.dto.Usuario;
 import com.transporte_gomez.erp.adapter.UsuarioAdapter;
 import com.transporte_gomez.erp.entity.UsuarioEntity;
 import com.transporte_gomez.erp.repository.UsuarioRepository;
+import com.transporte_gomez.erp.specification.UsuarioSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,8 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAdapter usuarioAdapter;
 
-    public List<Usuario> getAll() {
-        List<UsuarioEntity> usuarios = usuarioRepository.findAll();
+    public List<Usuario> getAll(Usuario filtro) {
+        List<UsuarioEntity> usuarios = usuarioRepository.findAll(UsuarioSpecification.conFiltros(filtro));
         return usuarioAdapter.obtenerTodosUsuarios(usuarios);
     }
 

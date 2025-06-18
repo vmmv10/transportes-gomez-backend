@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "empresa", schema = "qa")
-public class Empresa {
+public class EmpresaEntity {
     @Id
     @Column(name = "id", nullable = false)
     private Integer id;
