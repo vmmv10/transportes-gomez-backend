@@ -41,6 +41,10 @@ public class DocumentoSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("escuela").get("id"), filtro.getEscuela()));
             }
 
+            if(filtro.getAsignado() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("asignado"), filtro.getAsignado()));
+            }
+
             return predicates;
         };
     }

@@ -4,6 +4,7 @@ import com.transporte_gomez.erp.adapter.EntregaAdapter;
 import com.transporte_gomez.erp.dto.Entrega;
 import com.transporte_gomez.erp.dto.EntregaFiltro;
 import com.transporte_gomez.erp.dto.OrdenServicio;
+import com.transporte_gomez.erp.dto.ReporteMes;
 import com.transporte_gomez.erp.entity.EntregaEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.entity.RutaEntity;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -83,5 +85,16 @@ public class EntregaServices {
         OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
         ordenServicioEntity.setEnRuta(false);
         ordenServicioRepository.save(ordenServicioEntity);
+    }
+
+    public List<ReporteMes> obtenerEntregasEntregadasPorMes() {
+        List<Object[]> resultados = entregaRepository.contarEntregasEntregadasPorMes();
+
+        return resultados.stream()
+                .map(obj -> new ReporteMes(
+                        (String) obj[0],
+                        ((Number) obj[1]).longValue()
+                ))
+                .collect(Collectors.toList());
     }
 }

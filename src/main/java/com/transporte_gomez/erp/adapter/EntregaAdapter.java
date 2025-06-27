@@ -33,5 +33,4 @@ public class EntregaAdapter {
         return entrega;
     }
 
-
 }

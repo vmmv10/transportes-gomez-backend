@@ -55,7 +55,7 @@ public class DocumentoService {
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 try {
-                    imagenService.guardarImagen(file, Modulo.DOCUMENTO.getCodigo(), documentoEntitySave.getId(), rutaDocumentos);
+                    imagenService.guardarArchivo(file, Modulo.DOCUMENTO.getCodigo(), documentoEntitySave.getId(), rutaDocumentos);
                 } catch (Exception e) {
                     throw new RuntimeException("Error al guardar la imagen: " + e.getMessage(), e);
                 }
@@ -72,7 +72,7 @@ public class DocumentoService {
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 try {
-                    imagenService.guardarImagen(file, Modulo.DOCUMENTO.getCodigo(), documentoEntity.getId(), rutaDocumentos);
+                    imagenService.guardarArchivo(file, Modulo.DOCUMENTO.getCodigo(), documentoEntity.getId(), rutaDocumentos);
                 } catch (Exception e) {
                     throw new RuntimeException("Error al guardar la imagen: " + e.getMessage(), e);
                 }
@@ -85,5 +85,13 @@ public class DocumentoService {
 
     public void deleteDocumento(Long id) {
         documentoRepository.deleteById(id);
+        imagenService.eliminarImagenByEntidad(Modulo.DOCUMENTO.getCodigo(), id);
+    }
+
+    public void asignarDocumento(Long id, boolean asignado) {
+        DocumentoEntity documentoEntity = documentoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
+        documentoEntity.setAsignado(asignado);
+        documentoRepository.save(documentoEntity);
     }
 }

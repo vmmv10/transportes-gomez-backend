@@ -11,4 +11,5 @@ public class EntregaFiltro {
     private Long ordenServicio;
     private LocalDate fecha;
     private Integer id;
+    private Long escuela;
 }

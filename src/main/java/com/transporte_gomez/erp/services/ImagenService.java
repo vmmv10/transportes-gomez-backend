@@ -5,6 +5,7 @@ import com.transporte_gomez.erp.dto.Imagen;
 import com.transporte_gomez.erp.entity.ImagenEntity;
 import com.transporte_gomez.erp.repository.ImagenRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImagenService {
 
     private final ImagenRepository imagenRepository;
@@ -33,56 +35,60 @@ public class ImagenService {
                 .toList();
     }
 
-    public void guardarImagen(MultipartFile file, Integer entidadTipo, Long entidadId, String uploadDir) throws IOException {
-        // Validaciones
+    public void guardarArchivo(MultipartFile file, Integer entidadTipo, Long entidadId, String uploadDir) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("El archivo está vacío.");
         }
 
-        // Validar tipo MIME
+        log.info("📁 Directorio de subida: {}", uploadDir);
+        log.info("📁 tipo: {}", file.getContentType());
+
         String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("Solo se permiten archivos de imagen.");
+        if (contentType == null ||
+                (!contentType.startsWith("image/") && !contentType.equals("application/pdf"))) {
+            throw new IllegalArgumentException("Solo se permiten archivos de imagen o PDF.");
         }
 
-        // Validar tamaño máximo (5 MB en este ejemplo)
         long maxSize = 5 * 1024 * 1024; // 5 MB
         if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("El archivo excede el tamaño máximo permitido de 5 MB.");
         }
 
-        // Leer archivo una sola vez
-        byte[] imageBytes = file.getBytes();
-
-        // Generar nombres
+        byte[] fileBytes = file.getBytes();
         String nombreOriginal = file.getOriginalFilename();
         String uuid = UUID.randomUUID().toString();
         String nombreArchivo = uuid + "_" + nombreOriginal;
-        String nombreThumbnail = uuid + "_thumb_" + nombreOriginal;
 
-        // Guardar imagen original
-        Path rutaArchivo = Paths.get(uploadDir + "\\normal", nombreArchivo);
-        Files.write(rutaArchivo, imageBytes);
+        String subcarpeta = (entidadTipo.equals(4)) ? "documentos" :
+                (entidadTipo.equals(1)) ? "ordenes" :
+                        "otros";
 
-        // Crear y guardar thumbnail
-        Path rutaThumbnail = Paths.get(uploadDir + "\\thumb", nombreThumbnail);
-        Thumbnails.of(new ByteArrayInputStream(imageBytes))
-                .size(150, 150)
-                .toFile(rutaThumbnail.toFile());
+        Path rutaArchivo = Paths.get(uploadDir).resolve("normal").resolve(nombreArchivo);
+        Files.createDirectories(rutaArchivo.getParent());
+        Files.write(rutaArchivo, fileBytes);
+        log.info("✅ Archivo guardado en: {}", rutaArchivo.toAbsolutePath());
 
-        // Guardar en base de datos
+        String rutaRelativa = subcarpeta + "/normal/" + nombreArchivo;
+        String rutaThumbRelativa = null;
+
+        if (contentType.startsWith("image/")) {
+            String nombreThumbnail = uuid + "_thumb_" + nombreOriginal;
+            Path rutaThumbnail = Paths.get(uploadDir).resolve("thumb").resolve(nombreThumbnail);
+            Files.createDirectories(rutaThumbnail.getParent());
+            Thumbnails.of(new ByteArrayInputStream(fileBytes))
+                    .size(150, 150)
+                    .toFile(rutaThumbnail.toFile());
+            log.info("✅ Thumbnail guardado en: {}", rutaThumbnail.toAbsolutePath());
+
+            rutaThumbRelativa = subcarpeta + "/thumb/" + nombreThumbnail;
+        }
+
         ImagenEntity imagen = new ImagenEntity();
         imagen.setEntidadTipo(entidadTipo);
         imagen.setEntidadId(entidadId);
         imagen.setNombreOriginal(nombreOriginal);
-
-        if (entidadTipo.equals(4)) {
-            imagen.setRuta("documentos/normal/" + nombreArchivo);
-            imagen.setRutaThumbnail("documentos/thumb/" + nombreThumbnail);
-        } else if (entidadTipo.equals(1)) {
-            imagen.setRuta("ordenes/normal/" + nombreArchivo);
-            imagen.setRutaThumbnail("ordenes/thumb/" + nombreThumbnail);
-        }
+        imagen.setRuta(rutaRelativa);
+        imagen.setRutaThumbnail(rutaThumbRelativa); // puede ser null si es PDF
 
         imagenRepository.save(imagen);
     }
@@ -99,5 +105,13 @@ public class ImagenService {
         }
 
         imagenRepository.delete(imagenEntity);
+    }
+
+    public void eliminarImagenByEntidad(Integer entidadTipo, Long id) {
+        List<ImagenEntity> imagenEntity = imagenRepository.findByEntidadTipoAndEntidadId(entidadTipo, id);
+
+        for (ImagenEntity imagenEntity1 : imagenEntity) {
+            eliminarImagen(imagenEntity1.getId());
+        }
     }
 }

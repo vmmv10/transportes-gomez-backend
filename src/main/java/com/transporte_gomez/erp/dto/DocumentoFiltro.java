@@ -13,5 +13,6 @@ public class DocumentoFiltro {
     private String tipoNombre;
     private String fechaCreacionDesde;
     private String fechaCreacionHasta;
+    private Boolean asignado;
 
 }

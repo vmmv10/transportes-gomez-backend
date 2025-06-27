@@ -28,6 +28,10 @@ public class EntregaSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("ordenServicio").get("id"), filtro.getOrdenServicio()));
             }
 
+            if (filtro.getEscuela() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("ordenServicio").get("escuela").get("id"), filtro.getEscuela()));
+            }
+
             return predicates;
         };
     }

@@ -36,6 +36,7 @@ import java.util.List;
 @Service
 public class OrdenServicioService {
 
+    private final DocumentoService documentoService;
     @Value("${ruta.documentos}")
     private String rutaOrdenes;
 
@@ -62,6 +63,7 @@ public class OrdenServicioService {
             ordenServicioDetalleService.create(ordenServicio.getDetalles(), ordenServicioEntitySave);
         }
         auditoriaService.registrarAuditoria(AuditoriaOperacion.CREADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), ordenServicioEntitySave.getId(), usuario.getId());
+        documentoService.asignarDocumento(ordenServicioEntitySave.getDocumento().getId(), true);
         return ordenServicioAdapter.getOrdenServicio(ordenServicioEntitySave, true);
     }
 

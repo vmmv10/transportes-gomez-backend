@@ -51,4 +51,8 @@ public class DocumentoEntity {
     @Column(name = "entregado", nullable = false)
     private Boolean entregado = false;
 
+    @ColumnDefault("false")
+    @Column(name = "asignado", nullable = false)
+    private Boolean asignado = false;
+
 }

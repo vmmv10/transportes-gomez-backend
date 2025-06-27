@@ -17,4 +17,5 @@ public class Documento {
     private DocumentoTipo tipo;
     private Bodega bodega;
     private boolean entregado;
+    private boolean asignado;
 }
