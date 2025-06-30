@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -30,11 +31,13 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     Optional<EntregaEntity> findByRuta_IdAndOrdenServicio_Id(Integer id, Long id1);
 
     @Query(value = """
-        SELECT TO_CHAR(e.creado_en, 'YYYY-MM') AS mes, COUNT(*) AS total
-        FROM qa.entregas e
-        WHERE e.entregado = true
-        GROUP BY TO_CHAR(e.creado_en, 'YYYY-MM')
-        ORDER BY mes
-    """, nativeQuery = true)
-    List<Object[]> contarEntregasEntregadasPorMes();
+    SELECT TO_CHAR(e.creado_en, 'YYYY-MM') AS mes, COUNT(*) AS total
+    FROM qa.entregas e
+    INNER JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    WHERE e.entregado = true
+      AND (:escuela IS NULL OR os.escuela_id = :escuela)
+    GROUP BY TO_CHAR(e.creado_en, 'YYYY-MM')
+    ORDER BY mes
+""", nativeQuery = true)
+    List<Object[]> contarEntregasEntregadasPorMes(@Param("escuela") Long escuela);
 }

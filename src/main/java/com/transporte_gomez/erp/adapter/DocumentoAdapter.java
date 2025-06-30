@@ -16,7 +16,6 @@ public class DocumentoAdapter {
 
     private final DocumentoTipoRepository documentoTipoRepository;
     private final ProveedorRepository proveedorRepository;
-    private final EscuelaRepository escuelaRepository;
     private final UsuarioRepository usuarioRepository;
     private final BodegaRepository bodegaRepository;
 
@@ -90,11 +89,6 @@ public class DocumentoAdapter {
                     .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado")));
         }
 
-        if (documento.getEscuela() != null && documento.getEscuela().getId() != null) {
-            documentoEntity.setEscuela(escuelaRepository.findById(documento.getEscuela().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Escuela no encontrada")));
-        }
-
         DocumentoTipoEntity documentoTipoEntity = documentoTipoRepository.getReferenceById(documento.getTipo().getId());
         documentoEntity.setTipo(documentoTipoEntity);
 
@@ -117,11 +111,6 @@ public class DocumentoAdapter {
         if (documento.getProveedor() != null && documento.getProveedor().getId() != null) {
             documentoEntity.setProveedor(proveedorRepository.findById(documento.getProveedor().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado")));
-        }
-
-        if (documento.getEscuela() != null && documento.getEscuela().getId() != null) {
-            documentoEntity.setEscuela(escuelaRepository.findById(documento.getEscuela().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Escuela no encontrada")));
         }
 
         if (documento.getBodega() != null && documento.getBodega().getId() != null) {

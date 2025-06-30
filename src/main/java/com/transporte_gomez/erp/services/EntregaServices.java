@@ -87,8 +87,8 @@ public class EntregaServices {
         ordenServicioRepository.save(ordenServicioEntity);
     }
 
-    public List<ReporteMes> obtenerEntregasEntregadasPorMes() {
-        List<Object[]> resultados = entregaRepository.contarEntregasEntregadasPorMes();
+    public List<ReporteMes> obtenerEntregasEntregadasPorMes(EntregaFiltro filtro) {
+        List<Object[]> resultados = entregaRepository.contarEntregasEntregadasPorMes(filtro.getEscuela());
 
         return resultados.stream()
                 .map(obj -> new ReporteMes(

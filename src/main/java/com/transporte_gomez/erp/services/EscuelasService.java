@@ -4,11 +4,15 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.transporte_gomez.erp.adapter.EscuelaAdapter;
 import com.transporte_gomez.erp.dto.Escuela;
+import com.transporte_gomez.erp.dto.EscuelaFilter;
 import com.transporte_gomez.erp.dto.Establecimiento;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
 import com.transporte_gomez.erp.repository.EscuelaRepository;
+import com.transporte_gomez.erp.specification.EscuelaSpecification;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,9 +29,14 @@ public class EscuelasService {
     private final EscuelaRepository escuelaRepository;
     private final EscuelaAdapter escuelaAdapter;
 
+    public Page<Escuela> findAll(EscuelaFilter escuelaFilter, Pageable pageable) {
+        return escuelaRepository.findAll(EscuelaSpecification.conFiltros(escuelaFilter), pageable)
+                .map(escuelaAdapter::toDto);
+    }
 
     public List<Escuela> findAll() {
-        return escuelaAdapter.toDto(escuelaRepository.findAll());
+        List<EscuelaEntity> escuelaEntities = escuelaRepository.findAll();
+        return escuelaAdapter.toDto(escuelaEntities);
     }
 
     public Escuela findById(Long id) {

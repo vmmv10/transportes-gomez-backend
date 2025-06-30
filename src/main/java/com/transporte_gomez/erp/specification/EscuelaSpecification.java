@@ -26,6 +26,10 @@ public class EscuelaSpecification {
                 predicates = cb.and(predicates, cb.like(cb.lower(root.get("director")), "%" + filtro.getDirector().toLowerCase() + "%"));
             }
 
+            if(filtro.getActivo() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("activo"), filtro.getActivo()));
+            }
+
             return predicates;
         };
     }

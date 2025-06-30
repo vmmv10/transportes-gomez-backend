@@ -1,9 +1,12 @@
 package com.transporte_gomez.erp.controller;
 
 import com.transporte_gomez.erp.dto.Escuela;
+import com.transporte_gomez.erp.dto.EscuelaFilter;
 import com.transporte_gomez.erp.dto.Establecimiento;
 import com.transporte_gomez.erp.services.EscuelasService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,7 +20,12 @@ public class EscuelaController {
     private EscuelasService escuelasService;
 
     @GetMapping
-    public List<Escuela> getEscuelas() {
+    public Page<Escuela> getEscuelas(Pageable pageable, EscuelaFilter escuelaFilter) {
+        return escuelasService.findAll(escuelaFilter, pageable);
+    }
+
+    @GetMapping("/list")
+    public List<Escuela> getAllEscuelas() {
         return escuelasService.findAll();
     }
 

@@ -4,8 +4,8 @@ import com.transporte_gomez.erp.dto.EntregaFiltro;
 import com.transporte_gomez.erp.dto.EscuelaFilter;
 import com.transporte_gomez.erp.entity.EntregaEntity;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
-
 public class EntregaSpecification {
 
     public static Specification<EntregaEntity> conFiltros(EntregaFiltro filtro) {

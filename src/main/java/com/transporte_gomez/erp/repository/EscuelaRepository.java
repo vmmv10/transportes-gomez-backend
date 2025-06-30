@@ -1,12 +1,13 @@
 package com.transporte_gomez.erp.repository;
 
+import com.transporte_gomez.erp.entity.DocumentoEntity;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
-import org.hibernate.query.Page;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.awt.print.Pageable;
 import java.util.List;
 
 public interface EscuelaRepository extends JpaRepository<EscuelaEntity, Long> {
@@ -15,4 +16,6 @@ public interface EscuelaRepository extends JpaRepository<EscuelaEntity, Long> {
 
     @Query("select e from EscuelaEntity e where e.rbd = ?1")
     EscuelaEntity findByRbd(String rbd);
+
+    Page<EscuelaEntity> findAll(Specification<EscuelaEntity> escuelaEntitySpecificatio, Pageable pageable);
 }

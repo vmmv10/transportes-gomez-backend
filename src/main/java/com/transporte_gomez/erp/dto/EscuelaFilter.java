@@ -8,4 +8,5 @@ public class EscuelaFilter {
     private String comuna;
     private String rbd;
     private String director;
+    private Boolean activo;
 }
