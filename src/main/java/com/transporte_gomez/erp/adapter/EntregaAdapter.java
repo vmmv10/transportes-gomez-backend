@@ -30,6 +30,7 @@ public class EntregaAdapter {
         entrega.setOrdenServicio(ordenServicioAdapter.getOrdenServicio(entregaEntity.getOrdenServicio(), false));
         entrega.setEntregado(entregaEntity.getEntregado());
         entrega.setRuta(entregaEntity.getRuta().getId());
+        entrega.setOrden(entregaEntity.getOrden());
         return entrega;
     }
 

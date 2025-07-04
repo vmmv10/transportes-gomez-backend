@@ -3,6 +3,7 @@ package com.transporte_gomez.erp.services;
 import com.transporte_gomez.erp.adapter.RutaAdapter;
 import com.transporte_gomez.erp.dto.Ruta;
 import com.transporte_gomez.erp.dto.RutaFiltro;
+import com.transporte_gomez.erp.dto.Usuario;
 import com.transporte_gomez.erp.entity.RutaEntity;
 import com.transporte_gomez.erp.repository.RutaRepository;
 import com.transporte_gomez.erp.specification.RutaSpecification;
@@ -10,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,5 +62,13 @@ public class RutaService {
 
     public void deleteEntrega(Integer id, Long ordenServicio) {
         entregaServices.deleteEntregaByRutaAndOrden(id, ordenServicio);
+    }
+
+    public Ruta obtenerRutaUsuarioAndFechaHoy(Usuario usuario) {
+        Optional<RutaEntity> rutaEntityOptional = rutaRepository.findByFechaAndChofer_Id(LocalDate.now(), usuario.getId());
+        if (rutaEntityOptional.isEmpty()) {
+            throw new RuntimeException("Ruta no encontrada para el usuario con id: " + usuario.getId() + " y fecha: " + LocalDate.now());
+        }
+        return  rutaAdapter.getRuta(rutaEntityOptional.get());
     }
 }

@@ -12,4 +12,5 @@ public class Entrega {
     private boolean entregado;
     private LocalDate fecha;
     private Integer ruta;
+    private Integer orden;
 }

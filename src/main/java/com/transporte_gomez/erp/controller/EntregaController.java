@@ -32,4 +32,9 @@ public class EntregaController {
     public List<ReporteMes> obtenerEntregasPorMes(EntregaFiltro filtro) {
         return entregaServices.obtenerEntregasEntregadasPorMes(filtro);
     }
+
+    @PutMapping("/{id}/entregar")
+    public void entregar(@PathVariable Integer id) {
+        entregaServices.entregar(id);
+    }
 }

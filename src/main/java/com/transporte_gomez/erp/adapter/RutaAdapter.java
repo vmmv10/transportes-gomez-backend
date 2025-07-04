@@ -25,6 +25,7 @@ public class RutaAdapter {
     private final EntregaRepository entregaRepository;
     private final UsuarioAdapter usuarioAdapter;
     private final EntregaAdapter entregaAdapter;
+    private final RutaRepository rutaRepository;
 
     public Ruta getRuta(RutaEntity rutaEntity) {
         Ruta ruta = new Ruta();
@@ -58,7 +59,7 @@ public class RutaAdapter {
     public RutaEntity createRuta(Ruta ruta) {
         RutaEntity rutaEntity = new RutaEntity();
         rutaEntity.setId(ruta.getId());
-        rutaEntity.setFecha(LocalDate.now());
+        rutaEntity.setFecha(ruta.getFecha());
         rutaEntity.setEstado("PENDIENTE");
 
         if (ruta.getChofer() != null) {
@@ -75,6 +76,8 @@ public class RutaAdapter {
             rutaEntity.setChofer(usuarioRepository.findById(ruta.getChofer().getId())
                     .orElseThrow(() -> new RuntimeException("Chofer not found with id: " + ruta.getChofer().getId())));
         }
+        rutaEntity.setFecha(ruta.getFecha());
+        rutaEntity.setEstado(ruta.getEstado());
 
         return  rutaEntity;
     }

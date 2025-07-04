@@ -97,4 +97,20 @@ public class EntregaServices {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public void entregar(Integer id) {
+        EntregaEntity entregaEntity = entregaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entrega not found with id: " + id));
+
+        if (entregaEntity.getEntregado()) {
+            throw new RuntimeException("Entrega ya ha sido entregada con id: " + id);
+        }
+
+        entregaEntity.setEntregado(true);
+        entregaRepository.save(entregaEntity);
+
+        OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
+        ordenServicioEntity.setEnRuta(false);
+        ordenServicioRepository.save(ordenServicioEntity);
+    }
 }
