@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -70,5 +71,15 @@ public class RutaService {
             throw new RuntimeException("Ruta no encontrada para el usuario con id: " + usuario.getId() + " y fecha: " + LocalDate.now());
         }
         return  rutaAdapter.getRuta(rutaEntityOptional.get());
+    }
+
+    public Ruta comenzarRuta(Integer id) {
+        RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+        rutaEntity.setInicio(Instant.now());
+        rutaEntity.setEnTransito(true);
+
+        RutaEntity savedRutaEntity = rutaRepository.save(rutaEntity);
+
+        return rutaAdapter.getRuta(savedRutaEntity);
     }
 }

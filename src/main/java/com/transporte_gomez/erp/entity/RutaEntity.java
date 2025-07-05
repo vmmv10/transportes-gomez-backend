@@ -37,4 +37,14 @@ public class RutaEntity {
     @Column(name = "actualizado_en")
     private Instant actualizadoEn;
 
+    @ColumnDefault("false")
+    @Column(name = "en_transito", nullable = false)
+    private Boolean enTransito = false;
+
+    @Column(name = "inicio")
+    private Instant inicio;
+
+    @Column(name = "fin")
+    private Instant fin;
+
 }

@@ -56,4 +56,8 @@ public class RutaController {
         return rutaService.obtenerRutaUsuarioAndFechaHoy(usuario);
     }
 
+    @PutMapping("/{id}/comenzar")
+    public Ruta comenzar(@PathVariable Integer id) {
+        return rutaService.comenzarRuta(id);
+    }
 }
