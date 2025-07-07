@@ -30,4 +30,10 @@ public class UsuarioService {
         return usuarioAdapter.getUsuario(usuarioEntity);
     }
 
+    public Usuario UpdateUsuario(Usuario usuario) {
+        UsuarioEntity usuarioEntity = usuarioRepository.getReferenceById(usuario.getId());
+        UsuarioEntity updatedEntitySave = usuarioRepository.save(usuarioAdapter.uptdateUsuario(usuarioEntity, usuario));
+        return usuarioAdapter.getUsuario(updatedEntitySave);
+    }
+
 }

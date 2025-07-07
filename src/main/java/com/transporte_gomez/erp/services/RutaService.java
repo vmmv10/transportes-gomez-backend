@@ -82,4 +82,14 @@ public class RutaService {
 
         return rutaAdapter.getRuta(savedRutaEntity);
     }
+
+    public void finalizarRuta(Integer id) {
+        RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+        rutaEntity.setFin(Instant.now());
+        rutaEntity.setEnTransito(false);
+        rutaEntity.setEstado("FINALIZADA");
+
+        rutaRepository.save(rutaEntity);
+    }
+
 }

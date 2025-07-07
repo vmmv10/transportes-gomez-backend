@@ -33,7 +33,7 @@ public class EntregaController {
         return entregaServices.obtenerEntregasEntregadasPorMes(filtro);
     }
 
-    @PutMapping("/{id}/entregar")
+    @PutMapping("/{id}/recepcionado")
     public void entregar(@PathVariable Integer id) {
         entregaServices.entregar(id);
     }

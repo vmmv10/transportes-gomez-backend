@@ -16,8 +16,20 @@ public class UsuarioAdapter {
         Usuario usuario = new Usuario();
         usuario.setId(usuarioEntity.getId());
         usuario.setNombre(usuarioEntity.getNombre());
+        usuario.setTelefono(usuarioEntity.getTelefono());
+        usuario.setEmail(usuarioEntity.getEmail());
+        usuario.setApellidos(usuarioEntity.getApellidos());
+        usuario.setModoOscuro(usuarioEntity.getTemaOscuro());
 
         return usuario;
+    }
+
+    public UsuarioEntity uptdateUsuario(UsuarioEntity usuarioEntity, Usuario usuario) {
+        usuarioEntity.setNombre(usuario.getNombre());
+        usuarioEntity.setTelefono(usuario.getTelefono());
+        usuarioEntity.setEmail(usuario.getEmail());
+        usuarioEntity.setApellidos(usuario.getApellidos());
+        return usuarioEntity;
     }
 
     public List<Usuario> obtenerTodosUsuarios(List<UsuarioEntity> listaUsuarios) {

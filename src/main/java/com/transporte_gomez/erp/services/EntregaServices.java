@@ -10,12 +10,14 @@ import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.entity.RutaEntity;
 import com.transporte_gomez.erp.repository.EntregaRepository;
 import com.transporte_gomez.erp.repository.OrdenServicioRepository;
+import com.transporte_gomez.erp.repository.RutaRepository;
 import com.transporte_gomez.erp.specification.EntregaSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ public class EntregaServices {
     private final OrdenServicioRepository ordenServicioRepository;
     private final EntregaRepository entregaRepository;
     private final EntregaAdapter entregaAdapter;
+    private final RutaRepository rutaRepository;
 
     public Page<Entrega> getEntregas(Pageable pageable, EntregaFiltro filtro) {
         return entregaRepository.findAll(EntregaSpecification.conFiltros(filtro), pageable)
@@ -111,6 +114,25 @@ public class EntregaServices {
 
         OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
         ordenServicioEntity.setEnRuta(false);
+        ordenServicioEntity.setFechaEntrega(Instant.now());
         ordenServicioRepository.save(ordenServicioEntity);
+
+        List<EntregaEntity> entregas = entregaRepository.findByRuta_Id(entregaEntity.getRuta().getId());
+        Boolean sinEntregas = true;
+        for (EntregaEntity entrega : entregas) {
+            if (!entrega.getEntregado()) {
+                sinEntregas = false;
+                break;
+            }
+        }
+
+        if (sinEntregas) {
+            RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+            rutaEntity.setFin(Instant.now());
+            rutaEntity.setEnTransito(false);
+            rutaEntity.setEstado("FINALIZADA");
+
+            rutaRepository.save(rutaEntity);
+        }
     }
 }

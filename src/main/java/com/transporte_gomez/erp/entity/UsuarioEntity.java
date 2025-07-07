@@ -3,6 +3,7 @@ package com.transporte_gomez.erp.entity;
 import lombok.*;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "usuarios", schema = "qa")
@@ -34,5 +35,12 @@ public class UsuarioEntity {
 
     @Column(name = "email", length = Integer.MAX_VALUE)
     private String email;
+
+    @Column(name = "apellidos", length = Integer.MAX_VALUE)
+    private String apellidos;
+
+    @ColumnDefault("false")
+    @Column(name = "tema_oscuro", nullable = false)
+    private Boolean temaOscuro = false;
 
 }

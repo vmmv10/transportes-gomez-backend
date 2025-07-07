@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -48,5 +49,8 @@ public class OrdenServicioEntity {
     @ColumnDefault("false")
     @Column(name = "en_ruta")
     private Boolean enRuta;
+
+    @Column(name = "fecha_entrega")
+    private Instant fechaEntrega;
 
 }

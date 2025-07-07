@@ -1,9 +1,12 @@
 package com.transporte_gomez.erp.controller;
 
 import com.transporte_gomez.erp.dto.Proveedor;
+import com.transporte_gomez.erp.dto.ProveedorFiltro;
 import com.transporte_gomez.erp.entity.ProveedorEntity;
 import com.transporte_gomez.erp.services.ProveedorService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,9 +18,14 @@ public class ProveedorController {
 
     private final ProveedorService proveedorService;
 
-    @GetMapping
+    @GetMapping("/list")
     public List<Proveedor> getProveedores() {
         return proveedorService.getProveedores();
+    }
+
+    @GetMapping()
+    public Page<Proveedor> getProveedores(ProveedorFiltro filtro, Pageable pageable) {
+        return proveedorService.getAll(pageable, filtro);
     }
 
     @GetMapping("/{id}")

@@ -3,6 +3,7 @@ package com.transporte_gomez.erp.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,4 +19,7 @@ public class Ruta {
     private List<OrdenServicio> ordenes;
     private List<Entrega> entregas;
     private Integer orden;
+    private Boolean enTransito;
+    private Instant inicio;
+    private Integer fin;
 }

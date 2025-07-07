@@ -32,6 +32,7 @@ public class RutaAdapter {
         ruta.setId(rutaEntity.getId());
         ruta.setFecha(rutaEntity.getFecha());
         ruta.setEstado(rutaEntity.getEstado());
+        ruta.setEnTransito(rutaEntity.getEnTransito());
 
         if (rutaEntity.getChofer() != null) {
             ruta.setChofer(usuarioAdapter.getUsuario(rutaEntity.getChofer()));

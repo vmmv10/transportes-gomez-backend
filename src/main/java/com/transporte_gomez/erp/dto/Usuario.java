@@ -5,8 +5,11 @@ import lombok.Data;
 @Data
 public class Usuario {
 
-    public Long id;
-    public String nombre;
-    public String email;
-    public String rol;
+    private Long id;
+    private String nombre;
+    private String email;
+    private String rol;
+    private String telefono;
+    private String apellidos;
+    private Boolean modoOscuro;
 }
