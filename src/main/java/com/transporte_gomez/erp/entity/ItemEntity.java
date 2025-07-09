@@ -39,4 +39,7 @@ public class ItemEntity {
     @Column(name = "activo", nullable = false)
     private Boolean activo = false;
 
+    @Column(name = "codigo", length = 20)
+    private String codigo;
+
 }

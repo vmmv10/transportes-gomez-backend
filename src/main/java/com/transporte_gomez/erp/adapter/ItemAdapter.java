@@ -1,7 +1,6 @@
 package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.Item;
-import com.transporte_gomez.erp.dto.UnidadMedida;
 import com.transporte_gomez.erp.entity.ItemEntity;
 import com.transporte_gomez.erp.repository.UnidadesMedidaRepository;
 import lombok.AllArgsConstructor;
@@ -15,18 +14,16 @@ import java.util.List;
 public class ItemAdapter {
 
     private final UnidadesMedidaRepository unidadesMedidaRepository;
+    private final UnidadMedidaAdapter unidadMedidaAdapter;
 
     public Item getItem(ItemEntity itemEntity) {
         Item item = new Item();
         item.setId(itemEntity.getId());
         item.setNombre(itemEntity.getNombre());
         item.setDescripcion(itemEntity.getDescripcion());
+        item.setCodigo(itemEntity.getCodigo());
 
-        UnidadMedida unidadMedida = new UnidadMedida();
-        unidadMedida.setId(itemEntity.getUnidadMedida().getId());
-        unidadMedida.setNombre(itemEntity.getUnidadMedida().getNombre());
-
-        item.setUnidadMedida(unidadMedida);
+        item.setUnidadMedida(unidadMedidaAdapter.getUnidadMedida(itemEntity.getUnidadMedida()));
 
         return item;
     }
@@ -40,6 +37,7 @@ public class ItemAdapter {
     public ItemEntity updateItemEntity(Item item, ItemEntity itemEntity) {
         itemEntity.setNombre(item.getNombre());
         itemEntity.setDescripcion(item.getDescripcion());
+        itemEntity.setCodigo(item.getCodigo());
 
         if (item.getUnidadMedida() != null && item.getUnidadMedida().getId() != null) {
             itemEntity.setUnidadMedida(unidadesMedidaRepository.findById(item.getUnidadMedida().getId())
@@ -54,6 +52,7 @@ public class ItemAdapter {
         itemEntity.setNombre(item.getNombre());
         itemEntity.setDescripcion(item.getDescripcion());
         itemEntity.setCreadoEn(Instant.now());
+        itemEntity.setCodigo(item.getCodigo());
 
         if (item.getUnidadMedida() != null && item.getUnidadMedida().getId() != null) {
             itemEntity.setUnidadMedida(unidadesMedidaRepository.findById(item.getUnidadMedida().getId())

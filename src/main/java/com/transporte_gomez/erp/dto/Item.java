@@ -9,5 +9,6 @@ public class Item {
     private String nombre;
     private String descripcion;
     private UnidadMedida unidadMedida;
+    private String codigo;
 
 }

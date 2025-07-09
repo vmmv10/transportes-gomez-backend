@@ -1,0 +1,23 @@
+package com.transporte_gomez.erp.enums;
+
+public enum DevolucionEstado {
+    TERMPORAL("Temporal", 0),
+    ABIERTO("Abierto", 1),
+    CERRADO("Cerrado", 2);
+
+    private final String descripcion;
+    private final Integer codigo;
+
+    DevolucionEstado(String descripcion, Integer codigo) {
+        this.descripcion = descripcion;
+        this.codigo = codigo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public Integer getCodigo() {
+        return codigo;
+    }
+}

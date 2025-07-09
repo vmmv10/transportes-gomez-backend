@@ -58,4 +58,12 @@ public class ItemService {
         itemEntity.setActivo(false);
         itemRepository.save(itemEntity);
     }
+
+    public Item getByCodigo(String codigo) {
+        ItemEntity itemEntity = itemRepository.findByCodigo(codigo);
+        if (itemEntity == null) {
+            throw new IllegalArgumentException("Item no encontrado con código: " + codigo);
+        }
+        return itemAdapter.getItem(itemEntity);
+    }
 }
