@@ -39,6 +39,12 @@ public class DevolucionService {
         return devolucionAdapter.getDto(devolucionEntity, false);
     }
 
+    public Devolucion getByFolio(Long folio) {
+        DevolucionEntity devolucionEntity = devolucionRepository.findById(folio)
+                .orElseThrow(() -> new IllegalArgumentException("Devolución no encontrada con folio: " + folio));
+        return devolucionAdapter.getDto(devolucionEntity, true);
+    }
+
     public DevolucionDetalle createDetalle(Long folio, String codigo) {
         DevolucionEntity devolucionEntity = devolucionRepository.getReferenceById(folio);
 
@@ -49,7 +55,7 @@ public class DevolucionService {
         Item item = itemService.getByCodigo(codigo);
 
         DevolucionDetalle devolucionDetalle = new DevolucionDetalle();
-        devolucionDetalle.setCantidad(BigDecimal.ZERO);
+        devolucionDetalle.setCantidad(BigDecimal.ONE);
         devolucionDetalle.setItem(item);
 
         DevolucionDetalleEntity devolucionDetalleEntity = devolucionDetalleAdapter.createDevolucionDetalle(devolucionDetalle);
@@ -58,5 +64,21 @@ public class DevolucionService {
         DevolucionDetalleEntity devolucionDetalleEntitySave = devolucionDetalleRepository.save(devolucionDetalleEntity);
 
         return devolucionDetalleAdapter.getDto(devolucionDetalleEntitySave);
+    }
+
+    public void sumarCantidadDetalle(Long detalleId, BigDecimal cantidad) {
+        DevolucionDetalleEntity devolucionDetalleEntity = devolucionDetalleRepository.findById(detalleId)
+                .orElseThrow(() -> new IllegalArgumentException("Detalle de devolución no encontrado con ID: " + detalleId));
+
+        devolucionDetalleEntity.setCantidad(devolucionDetalleEntity.getCantidad().add(cantidad));
+        devolucionDetalleRepository.save(devolucionDetalleEntity);
+    }
+
+    public void actualizarEstadoDevolucion(Long folio, Integer estado) {
+        DevolucionEntity devolucionEntity = devolucionRepository.findById(folio)
+                .orElseThrow(() -> new IllegalArgumentException("Devolución no encontrada con folio: " + folio));
+
+        devolucionEntity.setEstado(estado);
+        devolucionRepository.save(devolucionEntity);
     }
 }

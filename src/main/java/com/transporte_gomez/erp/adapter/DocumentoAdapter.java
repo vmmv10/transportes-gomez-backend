@@ -42,7 +42,7 @@ public class DocumentoAdapter {
 
         documento.setProveedor(proveedorDto);
 
-        Escuela escuela = new Escuela();
+        /*Escuela escuela = new Escuela();
         escuela.setId(documentoEntity.getEscuela().getId());
         escuela.setNombre(documentoEntity.getEscuela().getNombre());
         escuela.setDireccion(documentoEntity.getEscuela().getDireccion());
@@ -54,7 +54,7 @@ public class DocumentoAdapter {
         escuela.setLongitud(documentoEntity.getEscuela().getLongitud());
         escuela.setComuna(documentoEntity.getEscuela().getComuna());
 
-        documento.setEscuela(escuela);
+        documento.setEscuela(escuela);*/
 
         DocumentoTipoEntity documentoTipoEntity = documentoEntity.getTipo();
         DocumentoTipo documentoTipo = new DocumentoTipo();

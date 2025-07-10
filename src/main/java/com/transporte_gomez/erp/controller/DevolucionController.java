@@ -30,4 +30,14 @@ public class DevolucionController {
     public DevolucionDetalle createDetalle(@PathVariable Long folio, @PathVariable String codigo) {
         return devolucionService.createDetalle(folio, codigo);
     }
+
+    @GetMapping("/{folio}")
+    public Devolucion getByFolio(@PathVariable Long folio) {
+        return devolucionService.getByFolio(folio);
+    }
+
+    @PutMapping("/detalles/{folio}/add")
+    public void sumarCantidadDetalle(@PathVariable Long folio, @RequestBody DevolucionDetalle devolucionDetalle) {
+        devolucionService.sumarCantidadDetalle(folio, devolucionDetalle.getCantidad());
+    }
 }
