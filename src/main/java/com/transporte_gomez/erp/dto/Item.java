@@ -10,5 +10,7 @@ public class Item {
     private String descripcion;
     private UnidadMedida unidadMedida;
     private String codigo;
+    private Marca marca;
+    private Categoria categoria;
 
 }

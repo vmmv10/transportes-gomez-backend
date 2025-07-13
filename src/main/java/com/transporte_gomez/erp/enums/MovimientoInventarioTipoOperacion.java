@@ -1,8 +1,8 @@
 package com.transporte_gomez.erp.enums;
 
 public enum MovimientoInventarioTipoOperacion {
-    ENTRADA("ENTRADA"),
-    SALIDA("SALIDA");
+    ENTRADA("entrada"),
+    SALIDA("salida");
 
     private final String tipo;
 

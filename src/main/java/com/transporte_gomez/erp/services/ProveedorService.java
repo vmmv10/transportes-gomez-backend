@@ -26,7 +26,7 @@ public class ProveedorService {
     }
 
     public List<Proveedor> getProveedores(){
-        return proveedorRepository.findAll().stream()
+        return proveedorRepository.findByActivo(true).stream()
                 .map(proveedorAdpater::getProveedor)
                 .toList();
     }
@@ -38,6 +38,7 @@ public class ProveedorService {
     }
 
     public Proveedor createProveedor(Proveedor proveedor) {
+        proveedor.setActivo(true);
         ProveedorEntity proveedorEntity = proveedorAdpater.createProveedor(proveedor);
         proveedorEntity = proveedorRepository.save(proveedorEntity);
         return proveedorAdpater.getProveedor(proveedorEntity);

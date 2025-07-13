@@ -5,12 +5,14 @@ import com.transporte_gomez.erp.repository.BodegaRepository;
 import com.transporte_gomez.erp.repository.ItemRepository;
 import com.transporte_gomez.erp.repository.SaldosBodegaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SaldoBodegaAdapter {
 
     private final SaldosBodegaRepository saldosBodegaRepository;
@@ -26,7 +28,6 @@ public class SaldoBodegaAdapter {
             saldosBodegaEntity.setCantidad(cantidad);
             saldosBodegaRepository.save(saldosBodegaEntity);
         } else {
-            saldosBodegaEntity.setCantidad(saldosBodegaEntity.getCantidad().add(cantidad));
             if (!sumar && saldosBodegaEntity.getCantidad().compareTo(BigDecimal.ZERO) < 0) {
                 throw new IllegalArgumentException("No se puede restar más de lo que hay en el saldo de bodega.");
             }

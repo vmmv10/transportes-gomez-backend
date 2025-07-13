@@ -3,12 +3,9 @@ package com.transporte_gomez.erp.dto;
 import lombok.Data;
 
 @Data
-public class ItemFilter {
+public class MarcaFiltro {
     private Integer id;
     private String nombre;
     private String descripcion;
     private Boolean activo;
-    private Integer categoria;
-    private Integer marca;
-    private Integer unidadMedida;
 }

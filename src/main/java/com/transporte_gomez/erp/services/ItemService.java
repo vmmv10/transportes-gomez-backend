@@ -1,16 +1,26 @@
 package com.transporte_gomez.erp.services;
 
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 import com.transporte_gomez.erp.adapter.ItemAdapter;
+import com.transporte_gomez.erp.dto.Establecimiento;
 import com.transporte_gomez.erp.dto.Item;
 import com.transporte_gomez.erp.dto.ItemFilter;
-import com.transporte_gomez.erp.entity.ItemEntity;
+import com.transporte_gomez.erp.entity.*;
 import com.transporte_gomez.erp.repository.ItemRepository;
+import com.transporte_gomez.erp.repository.MarcaRepository;
 import com.transporte_gomez.erp.specification.ItemSpecification;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -19,6 +29,8 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final ItemAdapter itemAdapter;
+    private final MarcaRepository marcaRepository;
+    private final CategoriaRepository categoriaRepository;
 
     public Page<Item> getAll(Pageable pageable, ItemFilter filter) {
         Page<ItemEntity> itemEntities = itemRepository.findAll(ItemSpecification.conFiltros(filter), pageable);
@@ -65,5 +77,30 @@ public class ItemService {
             throw new IllegalArgumentException("Item no encontrado con código: " + codigo);
         }
         return itemAdapter.getItem(itemEntity);
+    }
+
+    public void leerEXCEL(MultipartFile file) throws Exception {
+        try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+            CsvToBean<Item> csvToBean = new CsvToBeanBuilder<Item>(reader)
+                    .withType(Item.class)
+                    .withSeparator(',')
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            List<Item> items = csvToBean.parse();
+            List<ItemEntity> itemEntities = new ArrayList<>();
+            for (Item item : items) {
+                log.info("items: {}", item);
+                ItemEntity itemEntity = new ItemEntity();
+                itemEntity.setNombre(item.getNombre());
+                itemEntity.setDescripcion(item.getDescripcion());
+                itemEntity.setCodigo(item.getCodigo());
+                itemEntities.add(itemEntity);
+            }
+
+            if(!itemEntities.isEmpty()) {
+                itemRepository.saveAll(itemEntities);
+            }
+        }
     }
 }

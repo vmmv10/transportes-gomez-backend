@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,7 +55,7 @@ public class EscuelasService {
     }
 
     public void leerEstablecimientos(MultipartFile file) throws Exception {
-        try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), "ISO-8859-1")) {
+        try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             CsvToBean<Establecimiento> csvToBean = new CsvToBeanBuilder<Establecimiento>(reader)
                     .withType(Establecimiento.class)
                     .withSeparator(',')
@@ -67,7 +68,7 @@ public class EscuelasService {
                 EscuelaEntity escuelaEntity = escuelaRepository.findByRbd(establecimiento.getRbd());
 
                 if (escuelaEntity != null) {
-                    escuelaEntity.setActivo(true);
+                    escuelaEntity.setDirector(establecimiento.getDirector());
                     escuelaEntities.add(escuelaEntity);
                 } else {
                     log.warn("No se encontró escuela con RBD: {} nombre {}", establecimiento.getRbd(), establecimiento.getNombre());
@@ -76,7 +77,6 @@ public class EscuelasService {
             }
 
             if(!escuelaEntities.isEmpty()) {
-                log.info("Actualizando escuelas con RBDs: {}",escuelaEntities.size());
                 escuelaRepository.saveAll(escuelaEntities);
             }
         }

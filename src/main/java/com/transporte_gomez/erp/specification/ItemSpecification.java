@@ -18,6 +18,22 @@ public class ItemSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("activo"), filtro.getActivo()));
             }
 
+            if (filtro.getDescripcion() != null && !filtro.getDescripcion().isEmpty()) {
+                predicates = cb.and(predicates, cb.like(cb.lower(root.get("descripcion")), "%" + filtro.getDescripcion().toLowerCase() + "%"));
+            }
+
+            if (filtro.getCategoria() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("categoria").get("id"), filtro.getCategoria()));
+            }
+
+            if (filtro.getMarca() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("marca").get("id"), filtro.getMarca()));
+            }
+
+            if (filtro.getUnidadMedida() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("unidadMedida").get("id"), filtro.getUnidadMedida()));
+            }
+
             return predicates;
         };
     }

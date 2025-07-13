@@ -36,6 +36,7 @@ public class OrdenServicioAdapter {
         ordenServicio.setFecha(ordenServicioEntity.getFecha().toOffsetDateTime());
         ordenServicio.setEscuela(escuelaAdapter.toDto(ordenServicioEntity.getEscuela()));
         ordenServicio.setEntregado(ordenServicioEntity.getEntregado());
+        ordenServicio.setObservaciones(ordenServicioEntity.getObservaciones());
 
         if (conDetalles && ordenServicioEntity.getDetalles() != null) {
             List<OrdenServicioDetalle> detalles = new ArrayList<>();

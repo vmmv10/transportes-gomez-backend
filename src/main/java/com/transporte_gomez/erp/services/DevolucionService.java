@@ -8,6 +8,7 @@ import com.transporte_gomez.erp.dto.DevolucionFiltro;
 import com.transporte_gomez.erp.dto.Item;
 import com.transporte_gomez.erp.entity.DevolucionDetalleEntity;
 import com.transporte_gomez.erp.entity.DevolucionEntity;
+import com.transporte_gomez.erp.enums.DevolucionEstado;
 import com.transporte_gomez.erp.repository.DevolucionDetalleRepository;
 import com.transporte_gomez.erp.repository.DevolucionRepository;
 import com.transporte_gomez.erp.specification.DevolucionSpecification;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @RequiredArgsConstructor
 @Service
@@ -26,6 +28,8 @@ public class DevolucionService {
     private final DevolucionRepository devolucionRepository;
     private final DevolucionAdapter devolucionAdapter;
     private final ItemService itemService;
+    private final SaldoBodegaService saldoBodegaService;
+    private final MovimientoInventarioService movimientoInventarioService;
 
     public Page<Devolucion> findAll(Pageable pageable, DevolucionFiltro filtros) {
         return devolucionRepository.findAll(DevolucionSpecification.conFiltros(filtros),pageable)
@@ -47,10 +51,6 @@ public class DevolucionService {
 
     public DevolucionDetalle createDetalle(Long folio, String codigo) {
         DevolucionEntity devolucionEntity = devolucionRepository.getReferenceById(folio);
-
-        if (devolucionEntity == null) {
-            throw new IllegalArgumentException("Devolución no encontrada con folio: " + folio);
-        }
 
         Item item = itemService.getByCodigo(codigo);
 
@@ -80,5 +80,40 @@ public class DevolucionService {
 
         devolucionEntity.setEstado(estado);
         devolucionRepository.save(devolucionEntity);
+    }
+
+    public void updateEstado(Long folio, Integer estado) {
+        DevolucionEntity devolucionEntity = devolucionRepository.findById(folio)
+                .orElseThrow(() -> new IllegalArgumentException("Devolución no encontrada con folio: " + folio));
+
+        devolucionEntity.setEstado(estado);
+
+        if (DevolucionEstado.CERRADO.getCodigo().equals(estado)) {
+            devolucionEntity.setFecha(Instant.now());
+            devolucionEntity.getDevolucionesDetalles().forEach(detalle -> {
+                movimientoInventarioService.createByDevolucion(2L, detalle.getId());
+                saldoBodegaService.createOrUpdate(detalle.getItem().getId(), 2l, "ENTRADA", detalle.getCantidad());
+            });
+        }
+        devolucionRepository.save(devolucionEntity);
+    }
+
+    public void modificarCantidadDetalle(Long detalleId, BigDecimal cantidad) {
+        DevolucionDetalleEntity devolucionDetalleEntity = devolucionDetalleRepository.getReferenceById(detalleId);
+        if (devolucionDetalleEntity == null) {
+            throw new IllegalArgumentException("Detalle de devolución no encontrado con ID: " + detalleId);
+        }
+        if (cantidad.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("La cantidad no puede ser negativa");
+        }
+        devolucionDetalleEntity.setCantidad(cantidad);
+        devolucionDetalleRepository.save(devolucionDetalleEntity);
+    }
+
+    public void eliminarDetalle(Long detalleId) {
+        DevolucionDetalleEntity devolucionDetalleEntity = devolucionDetalleRepository.findById(detalleId)
+                .orElseThrow(() -> new IllegalArgumentException("Detalle de devolución no encontrado con ID: " + detalleId));
+
+        devolucionDetalleRepository.delete(devolucionDetalleEntity);
     }
 }

@@ -211,7 +211,6 @@ public class OrdenServicioService {
 
             PdfPTable tableObs = new PdfPTable(1);
             tableObs.setWidthPercentage(100);
-            tableObs.addCell(celdaBottomLimpio("Traslado de Bultos", Element.ALIGN_LEFT));
             tableObs.addCell(celdaTopLimpio(orden.getObservaciones(), Element.ALIGN_LEFT));
             doc.add(tableObs);
             doc.add(new Paragraph(" "));

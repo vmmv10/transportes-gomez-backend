@@ -9,8 +9,8 @@ public class Devolucion {
     private Long id;
     private String motivo;
     private String fecha;
-    private String estado;
-    private Integer estadoCodigo;
+    private Integer estado;
+    private String estadoNombre;
     private OrdenServicio ordenServicio;
     private Escuela escuela;
     private List<DevolucionDetalle> detalles;

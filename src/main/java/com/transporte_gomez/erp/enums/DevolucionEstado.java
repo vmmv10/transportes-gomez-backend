@@ -20,4 +20,13 @@ public enum DevolucionEstado {
     public Integer getCodigo() {
         return codigo;
     }
+
+    public String getByCodigo(Integer codigo) {
+        for (DevolucionEstado estado : DevolucionEstado.values()) {
+            if (estado.getCodigo().equals(codigo)) {
+                return estado.getDescripcion();
+            }
+        }
+        return null; // or throw an exception if preferred
+    }
 }

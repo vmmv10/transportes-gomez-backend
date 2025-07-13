@@ -26,10 +26,10 @@ public class DocumentoAdapter {
         documento.setEntregado(documentoEntity.getEntregado());
         documento.setAsignado(documentoEntity.getAsignado());
 
-        Usuario usuario = new Usuario();
+        /*Usuario usuario = new Usuario();
         usuario.setId(documentoEntity.getUsuario().getId());
         usuario.setNombre(documentoEntity.getUsuario().getNombre());
-        documento.setUsuario(usuario);
+        documento.setUsuario(usuario);*/
 
         Proveedor proveedorDto = new Proveedor();
         proveedorDto.setId(documentoEntity.getProveedor().getId());

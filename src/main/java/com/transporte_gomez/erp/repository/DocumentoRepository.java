@@ -14,4 +14,7 @@ public interface DocumentoRepository extends JpaRepository<DocumentoEntity, Long
 
     @Query("select d from DocumentoEntity d where d.numero = ?1 and d.tipo.codigo = ?2")
     DocumentoEntity findByNumeroAndTipo_Codigo(Long numero, Integer codigo);
+
+    @Query("select d from DocumentoEntity d where d.numero = ?1")
+    DocumentoEntity findByNumero(Long numero);
 }

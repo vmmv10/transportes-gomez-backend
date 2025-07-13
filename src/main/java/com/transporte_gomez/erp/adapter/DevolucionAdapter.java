@@ -29,6 +29,7 @@ public class DevolucionAdapter {
 
         devolucion.setId(devolucionEntity.getId());
         devolucion.setFecha(String.valueOf(devolucionEntity.getFecha()));
+        devolucion.setEstado(devolucionEntity.getEstado());
         devolucion.setEscuela(escuelaAdapter.toDto(devolucionEntity.getEscuela()));
         devolucion.setOrdenServicio(ordenServicioAdapter.getOrdenServicio(devolucionEntity.getOrden(),false));
         if (conDetalles) {

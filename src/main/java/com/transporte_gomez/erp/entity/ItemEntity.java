@@ -42,4 +42,12 @@ public class ItemEntity {
     @Column(name = "codigo", length = 20)
     private String codigo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria")
+    private CategoriaEntity categoria;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "marca")
+    private MarcaEntity marca;
+
 }

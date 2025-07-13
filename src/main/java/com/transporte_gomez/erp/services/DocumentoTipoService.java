@@ -22,4 +22,15 @@ public class DocumentoTipoService {
                 .map(documentoTipoAdapter::getDocumentoTipo)
                 .toList();
     }
+
+    public DocumentoTipo findById(Integer id) {
+        DocumentoTipoEntity documentoTipoEntity = documentoTipoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Documento Tipo no encontrado con ID: " + id));
+        return documentoTipoAdapter.getDocumentoTipo(documentoTipoEntity);
+    }
+
+    public DocumentoTipo findBySii(Integer siiCodigo) {
+        DocumentoTipoEntity documentoTipoEntity = documentoTipoRepository.findByCodigo(siiCodigo);
+        return documentoTipoAdapter.getDocumentoTipo(documentoTipoEntity);
+    }
 }
