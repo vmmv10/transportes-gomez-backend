@@ -6,12 +6,13 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "ingresos_emergencia", schema = "qa")
-public class IngresosEmergencia {
+public class IngresosEmergenciaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -26,5 +27,19 @@ public class IngresosEmergencia {
 
     @Column(name = "observaciones", length = Integer.MAX_VALUE)
     private String observaciones;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "documento_tipo")
+    private DocumentoTipoEntity documentoTipo;
+
+    @OneToMany(mappedBy = "ingreso", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<IngresosEmergenciaDetalleEntity> detalles;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "bodega", nullable = false)
+    private BodegaEntity bodega;
+
+    @Column(name = "estado", nullable = false)
+    private Integer estado;
 
 }

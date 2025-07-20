@@ -2,7 +2,7 @@ package com.transporte_gomez.erp.services;
 
 import com.transporte_gomez.erp.adapter.CategoriaAdapter;
 import com.transporte_gomez.erp.dto.Categoria;
-import com.transporte_gomez.erp.entity.CategoriaRepository;
+import com.transporte_gomez.erp.repository.CategoriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

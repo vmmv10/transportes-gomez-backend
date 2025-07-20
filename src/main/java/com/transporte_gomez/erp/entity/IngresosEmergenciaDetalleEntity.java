@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "ingresos_emergencia_detalles", schema = "qa")
-public class IngresosEmergenciaDetalle {
+public class IngresosEmergenciaDetalleEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -21,13 +21,13 @@ public class IngresosEmergenciaDetalle {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "ingreso")
-    private IngresosEmergencia ingreso;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "items")
-    private ItemEntity items;
+    private IngresosEmergenciaEntity ingreso;
 
     @Column(name = "cantidad", nullable = false)
     private BigDecimal cantidad;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item")
+    private ItemEntity item;
 
 }

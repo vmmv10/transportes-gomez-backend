@@ -1,5 +1,6 @@
-package com.transporte_gomez.erp.entity;
+package com.transporte_gomez.erp.repository;
 
+import com.transporte_gomez.erp.entity.CategoriaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

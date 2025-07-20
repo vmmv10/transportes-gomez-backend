@@ -1,5 +1,6 @@
 package com.transporte_gomez.erp.adapter;
 
+import com.transporte_gomez.erp.dto.SaldoBodega;
 import com.transporte_gomez.erp.entity.SaldosBodegaEntity;
 import com.transporte_gomez.erp.repository.BodegaRepository;
 import com.transporte_gomez.erp.repository.ItemRepository;
@@ -18,6 +19,7 @@ public class SaldoBodegaAdapter {
     private final SaldosBodegaRepository saldosBodegaRepository;
     private final BodegaRepository bodegaRepository;
     private final ItemRepository itemRepository;
+    private final ItemAdapter itemAdapter;
 
     public void createOrUpdate(Long id, BigDecimal cantidad, Long bodega, boolean sumar) {
         SaldosBodegaEntity saldosBodegaEntity = saldosBodegaRepository.findByBodega_IdAndItem_Id(bodega, id);
@@ -39,5 +41,18 @@ public class SaldoBodegaAdapter {
             }
             saldosBodegaRepository.save(saldosBodegaEntity);
         }
+    }
+
+    public SaldoBodega get(SaldosBodegaEntity saldosBodegaEntity) {
+        if (saldosBodegaEntity == null) {
+            return null;
+        }
+
+        SaldoBodega saldoBodega = new SaldoBodega();
+        saldoBodega.setId(saldosBodegaEntity.getId());
+        saldoBodega.setSaldo(saldosBodegaEntity.getCantidad());
+        saldoBodega.setItem(itemAdapter.getItem(saldosBodegaEntity.getItem()));
+
+        return saldoBodega;
     }
 }

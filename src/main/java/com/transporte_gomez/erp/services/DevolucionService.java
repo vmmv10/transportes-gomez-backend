@@ -9,6 +9,8 @@ import com.transporte_gomez.erp.dto.Item;
 import com.transporte_gomez.erp.entity.DevolucionDetalleEntity;
 import com.transporte_gomez.erp.entity.DevolucionEntity;
 import com.transporte_gomez.erp.enums.DevolucionEstado;
+import com.transporte_gomez.erp.enums.MovimientoInventarioTipo;
+import com.transporte_gomez.erp.enums.MovimientoInventarioTipoOperacion;
 import com.transporte_gomez.erp.repository.DevolucionDetalleRepository;
 import com.transporte_gomez.erp.repository.DevolucionRepository;
 import com.transporte_gomez.erp.specification.DevolucionSpecification;
@@ -91,7 +93,7 @@ public class DevolucionService {
         if (DevolucionEstado.CERRADO.getCodigo().equals(estado)) {
             devolucionEntity.setFecha(Instant.now());
             devolucionEntity.getDevolucionesDetalles().forEach(detalle -> {
-                movimientoInventarioService.createByDevolucion(2L, detalle.getId());
+                movimientoInventarioService.create(MovimientoInventarioTipo.DEVOLUCION, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getId(), 2L);
                 saldoBodegaService.createOrUpdate(detalle.getItem().getId(), 2l, "ENTRADA", detalle.getCantidad());
             });
         }

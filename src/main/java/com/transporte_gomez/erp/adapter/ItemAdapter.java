@@ -1,7 +1,7 @@
 package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.Item;
-import com.transporte_gomez.erp.entity.CategoriaRepository;
+import com.transporte_gomez.erp.repository.CategoriaRepository;
 import com.transporte_gomez.erp.entity.ItemEntity;
 import com.transporte_gomez.erp.repository.MarcaRepository;
 import com.transporte_gomez.erp.repository.UnidadesMedidaRepository;
