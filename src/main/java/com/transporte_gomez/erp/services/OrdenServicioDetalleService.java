@@ -4,6 +4,8 @@ import com.transporte_gomez.erp.adapter.OrdenServicioDetalleAdapter;
 import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
 import com.transporte_gomez.erp.entity.OrdenServicioDetalleEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
+import com.transporte_gomez.erp.enums.MovimientoInventarioTipo;
+import com.transporte_gomez.erp.enums.MovimientoInventarioTipoOperacion;
 import com.transporte_gomez.erp.repository.OrdenServicioDetalleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,15 +21,22 @@ public class OrdenServicioDetalleService {
 
     private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
     private final OrdenServicioDetalleAdapter ordenServicioDetalleAdapter;
+    private final MovimientoInventarioService movimientoInventarioService;
+    private final SaldoBodegaService saldoBodegaService;
 
     public void create(List<OrdenServicioDetalle> ordenServicioDetalleList, OrdenServicioEntity ordenServicioEntitySave) {
-        List<OrdenServicioDetalleEntity> ordenServicioDetalleEntitySave = new ArrayList<>();
         for (OrdenServicioDetalle detalle : ordenServicioDetalleList) {
             OrdenServicioDetalleEntity detalleEntity = ordenServicioDetalleAdapter.createOrdenServicioDetalle(detalle);
             detalleEntity.setOrdenServicio(ordenServicioEntitySave);
-            ordenServicioDetalleEntitySave.add(detalleEntity);
+            if (detalle.getSaldoBodega() != null && detalle.getSaldoBodega().getItem() != null) {
+                detalleEntity.setItem(detalle.getSaldoBodega().getItem().getId());
+            }
+            detalleEntity = ordenServicioDetalleRepository.save(detalleEntity);
+            if (ordenServicioEntitySave.getBodega() != null && ordenServicioEntitySave.getBodega() != 1L) {
+                movimientoInventarioService.create(MovimientoInventarioTipo.ORDEN_SERVICIO, MovimientoInventarioTipoOperacion.SALIDA, detalleEntity.getId(), ordenServicioEntitySave.getBodega());
+                saldoBodegaService.createOrUpdate(detalle.getSaldoBodega().getItem().getId(), ordenServicioEntitySave.getBodega(), "SALIDA", detalleEntity.getCantidad());
+            }
         }
-        ordenServicioDetalleRepository.saveAll(ordenServicioDetalleEntitySave);
     }
 
     public void update(List<OrdenServicioDetalle> ordenServicioDetalleList, OrdenServicioEntity ordenServicioEntity) {
@@ -37,7 +46,6 @@ public class OrdenServicioDetalleService {
             if (detalle.getId() == null || detalle.getId() <= 0) {
                 detalleEntity = ordenServicioDetalleAdapter.createOrdenServicioDetalle(detalle);
             } else {
-                log.info("----------------------Actualizando detalle con ID: {}", detalle.getId());
                 detalleEntity = ordenServicioDetalleRepository.findById(detalle.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Detalle no encontrado con ID: " + detalle.getId()));
                 detalleEntity = ordenServicioDetalleAdapter.updateOrdenServicioDetalle(detalle, detalleEntity);

@@ -21,11 +21,14 @@ public class OrdenServicioDetalleEntity {
     private String nombre;
 
     @Column(name = "cantidad")
-    private Integer cantidad;
+    private BigDecimal cantidad;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "orden_servicio", nullable = false)
     private OrdenServicioEntity ordenServicio;
 
+
+    @Column(name = "item")
+    private Long item;
 
 }

@@ -42,8 +42,8 @@ public class OrdenServicioEntity {
     @OneToMany(mappedBy = "ordenServicio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrdenServicioDetalleEntity> detalles;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "documento", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "documento")
     private DocumentoEntity documento;
 
     @ColumnDefault("false")
@@ -52,5 +52,8 @@ public class OrdenServicioEntity {
 
     @Column(name = "fecha_entrega")
     private Instant fechaEntrega;
+
+    @Column(name = "bodega")
+    private Long bodega;
 
 }

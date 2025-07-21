@@ -2,8 +2,10 @@ package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.OrdenServicio;
 import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
+import com.transporte_gomez.erp.entity.BodegaEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioDetalleEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
+import com.transporte_gomez.erp.repository.BodegaRepository;
 import com.transporte_gomez.erp.repository.DocumentoRepository;
 import com.transporte_gomez.erp.repository.EscuelaRepository;
 import com.transporte_gomez.erp.repository.OrdenServicioDetalleRepository;
@@ -27,12 +29,21 @@ public class OrdenServicioAdapter {
     private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
     private final EscuelaRepository escuelaRepository;
     private final DocumentoRepository documentoRepository;
+    private final BodegaRepository bodegaRepository;
+    private final BodegaAdapter bodegaAdapter;
 
     public OrdenServicio getOrdenServicio(OrdenServicioEntity ordenServicioEntity, boolean conDetalles) {
         OrdenServicio ordenServicio = new OrdenServicio();
 
         ordenServicio.setId(ordenServicioEntity.getId());
-        ordenServicio.setDocumento(documentoAdapter.getDocumento(ordenServicioEntity.getDocumento()));
+        if (ordenServicioEntity.getBodega() != null) {
+            BodegaEntity bodegaEntity = bodegaRepository.findById(ordenServicioEntity.getBodega())
+                    .orElseThrow(() -> new IllegalArgumentException("Bodega no encontrada con ID: " + ordenServicioEntity.getBodega()));
+            ordenServicio.setBodega(bodegaAdapter.getBodega(bodegaEntity));
+        }
+        if (ordenServicioEntity.getDocumento() != null) {
+            ordenServicio.setDocumento(documentoAdapter.getDocumento(ordenServicioEntity.getDocumento()));
+        }
         ordenServicio.setFecha(ordenServicioEntity.getFecha().toOffsetDateTime());
         ordenServicio.setEscuela(escuelaAdapter.toDto(ordenServicioEntity.getEscuela()));
         ordenServicio.setEntregado(ordenServicioEntity.getEntregado());
@@ -58,7 +69,13 @@ public class OrdenServicioAdapter {
         ordenServicioEntity.setEntregado(false);
         ordenServicioEntity.setObservaciones(ordenServicio.getObservaciones());
 
-        if (ordenServicio.getDocumento() != null) {
+        if (ordenServicio.getBodega() != null) {
+            BodegaEntity bodegaEntity = bodegaRepository.findById(ordenServicio.getBodega().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Bodega no encontrada con ID: " + ordenServicio.getBodega().getId()));
+            ordenServicioEntity.setBodega(bodegaEntity.getId());
+        }
+
+        if (ordenServicio.getDocumento() != null && ordenServicio.getDocumento().getId() > 0) {
             ordenServicioEntity.setDocumento(documentoRepository.findByNumeroAndTipo_Codigo(ordenServicio.getDocumento().getNumero(), ordenServicio.getDocumento().getTipo().getCodigo()));
         }
 

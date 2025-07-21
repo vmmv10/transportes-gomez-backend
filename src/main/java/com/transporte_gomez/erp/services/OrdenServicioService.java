@@ -14,6 +14,7 @@ import com.transporte_gomez.erp.enums.Modulo;
 import com.transporte_gomez.erp.repository.OrdenServicioRepository;
 import com.transporte_gomez.erp.specification.OrdenServicioSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class OrdenServicioService {
@@ -58,12 +60,15 @@ public class OrdenServicioService {
     }
 
     public OrdenServicio createOrdenServicio(OrdenServicio ordenServicio, Usuario usuario) {
+        log.info("OrdenServicio createOrdenServicio: {}", ordenServicio);
         OrdenServicioEntity ordenServicioEntitySave = ordenServicioRepository.save(ordenServicioAdapter.createOrdenServicio(ordenServicio));
         if (ordenServicio.getDetalles() != null && !ordenServicio.getDetalles().isEmpty()) {
             ordenServicioDetalleService.create(ordenServicio.getDetalles(), ordenServicioEntitySave);
         }
         auditoriaService.registrarAuditoria(AuditoriaOperacion.CREADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), ordenServicioEntitySave.getId(), usuario.getId());
-        documentoService.asignarDocumento(ordenServicioEntitySave.getDocumento().getId(), true);
+        if (ordenServicioEntitySave.getBodega() != null && ordenServicioEntitySave.getBodega() == 1L) {
+            documentoService.asignarDocumento(ordenServicioEntitySave.getDocumento().getId(), true);
+        }
         return ordenServicioAdapter.getOrdenServicio(ordenServicioEntitySave, true);
     }
 
@@ -304,5 +309,9 @@ public class OrdenServicioService {
         cell.setHorizontalAlignment(posicion);
         cell.setBorderColor(Color.LIGHT_GRAY);
         return cell;
+    }
+
+    public void deleteDetalle(Long id) {
+        ordenServicioDetalleService.delete(id);
     }
 }

@@ -41,7 +41,6 @@ public class OrdenServicioController {
     public OrdenServicio createOrdenServicio(@RequestBody OrdenServicio ordenServicio,
                                              @AuthenticationPrincipal Jwt jwt) {
         Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
-        log.info("Usuario logueado: {}", usuario.getId());
         return ordenServicioService.createOrdenServicio(ordenServicio, usuario);
     }
 
@@ -62,5 +61,10 @@ public class OrdenServicioController {
     @PostMapping("/{id}/pdf")
     public ResponseEntity<byte[]> generarPdf(@PathVariable Long id) {
         return ordenServicioService.generarPdf(id);
+    }
+
+    @DeleteMapping("/detalleS/{detalleId}")
+    public void deleteDetalle(@PathVariable Long detalleId) {
+        ordenServicioService.deleteDetalle(detalleId);
     }
 }
