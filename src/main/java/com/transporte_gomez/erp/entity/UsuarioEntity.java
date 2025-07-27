@@ -17,7 +17,6 @@ public class UsuarioEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(name = "nombre", length = Integer.MAX_VALUE)
     private String nombre;
 

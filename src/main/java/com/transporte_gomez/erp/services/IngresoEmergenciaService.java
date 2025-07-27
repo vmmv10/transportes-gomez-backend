@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -37,8 +38,10 @@ public class IngresoEmergenciaService {
 
     }
 
-    public IngresosEmergencia create(IngresosEmergencia ingresoEmergencia) {
+    public IngresosEmergencia create(IngresosEmergencia ingresoEmergencia, Usuario usuario) {
         IngresosEmergenciaEntity ingresosEmergenciaEntity = ingresoEmergenciaAdapter.toEntity(ingresoEmergencia);
+        ingresosEmergenciaEntity.setFecha(Instant.now());
+        ingresosEmergenciaEntity.setUser(usuario.getId());
         ingresosEmergenciaEntity = ingresosEmergenciaRepository.save(ingresosEmergenciaEntity);
         return ingresoEmergenciaAdapter.toDto(ingresosEmergenciaEntity, false);
     }
@@ -115,5 +118,19 @@ public class IngresoEmergenciaService {
                 .orElseThrow(() -> new IllegalArgumentException("Detalle no encontrado con ID: " + detalleId));
 
         ingresosEmergenciaDetalleRepository.delete(ingresoEmergenciaDetalleEntity);
+    }
+
+    public IngresosEmergencia getTemporalByUser(Usuario usuario) {
+        List<IngresosEmergenciaEntity> ingresosEmergenciaEntity = ingresosEmergenciaRepository.findByUserAndEstado(usuario.getId(), IngresoEmergenciaEstado.TERMPORAL.getCodigo());
+        if (ingresosEmergenciaEntity.isEmpty()) {
+            return null;
+        }
+        return ingresoEmergenciaAdapter.toDto(ingresosEmergenciaEntity.get(0), true);
+    }
+
+    public void delete(Integer folio) {
+        IngresosEmergenciaEntity ingresosEmergenciaEntity = ingresosEmergenciaRepository.findById(folio)
+                .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado con folio: " + folio));
+        ingresosEmergenciaRepository.delete(ingresosEmergenciaEntity);
     }
 }

@@ -42,4 +42,7 @@ public class IngresosEmergenciaEntity {
     @Column(name = "estado", nullable = false)
     private Integer estado;
 
+    @Column(name = "\"user\"")
+    private Long user;
+
 }

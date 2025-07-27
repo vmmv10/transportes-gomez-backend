@@ -40,4 +40,7 @@ public class DevolucionEntity {
     @OneToMany(mappedBy = "devolucion")
     private List<DevolucionDetalleEntity> devolucionesDetalles = new ArrayList<>();
 
+    @Column(name = "\"user\"")
+    private Long user;
+
 }

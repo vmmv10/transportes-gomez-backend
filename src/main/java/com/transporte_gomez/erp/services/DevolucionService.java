@@ -2,10 +2,8 @@ package com.transporte_gomez.erp.services;
 
 import com.transporte_gomez.erp.adapter.DevolucionAdapter;
 import com.transporte_gomez.erp.adapter.DevolucionDetalleAdapter;
-import com.transporte_gomez.erp.dto.Devolucion;
-import com.transporte_gomez.erp.dto.DevolucionDetalle;
-import com.transporte_gomez.erp.dto.DevolucionFiltro;
-import com.transporte_gomez.erp.dto.Item;
+import com.transporte_gomez.erp.adapter.UsuarioAdapter;
+import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.entity.DevolucionDetalleEntity;
 import com.transporte_gomez.erp.entity.DevolucionEntity;
 import com.transporte_gomez.erp.enums.DevolucionEstado;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -39,8 +38,10 @@ public class DevolucionService {
 
     }
 
-    public Devolucion create(Devolucion devolucion) {
+    public Devolucion create(Devolucion devolucion, Usuario usuario) {
         DevolucionEntity devolucionEntity = devolucionAdapter.createDevolucion(devolucion);
+        devolucionEntity.setFecha(Instant.now());
+        devolucionEntity.setUser(usuario.getId());
         devolucionEntity = devolucionRepository.save(devolucionEntity);
         return devolucionAdapter.getDto(devolucionEntity, false);
     }
@@ -117,5 +118,20 @@ public class DevolucionService {
                 .orElseThrow(() -> new IllegalArgumentException("Detalle de devolución no encontrado con ID: " + detalleId));
 
         devolucionDetalleRepository.delete(devolucionDetalleEntity);
+    }
+
+    public Devolucion getTemporalByUser(Usuario usuario) {
+        List<DevolucionEntity> devolucionEntity = devolucionRepository.findByUserAndEstado(usuario.getId(), DevolucionEstado.TERMPORAL.getCodigo());
+        if (devolucionEntity.isEmpty()) {
+            return null;
+        } else {
+            return devolucionAdapter.getDto(devolucionEntity.get(0), true);
+        }
+    }
+
+    public void delete(Long folio) {
+        DevolucionEntity devolucionEntity = devolucionRepository.findById(folio)
+                .orElseThrow(() -> new IllegalArgumentException("Devolución no encontrada con folio: " + folio));
+        devolucionRepository.delete(devolucionEntity);
     }
 }

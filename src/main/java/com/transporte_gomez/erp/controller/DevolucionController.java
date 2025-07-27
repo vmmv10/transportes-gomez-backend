@@ -1,13 +1,14 @@
 package com.transporte_gomez.erp.controller;
 
-import com.transporte_gomez.erp.dto.Devolucion;
-import com.transporte_gomez.erp.dto.DevolucionDetalle;
-import com.transporte_gomez.erp.dto.DevolucionFiltro;
+import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.enums.DevolucionEstado;
 import com.transporte_gomez.erp.services.DevolucionService;
+import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class DevolucionController {
 
     private final DevolucionService devolucionService;
+    private final UsuarioService usuarioService;
 
     @GetMapping
     public Page<Devolucion> getDevoluciones(Pageable pageable, DevolucionFiltro filtro) {
@@ -23,8 +25,9 @@ public class DevolucionController {
     }
 
     @PostMapping
-    public Devolucion createDevolucion(@RequestBody Devolucion devolucion) {
-        return devolucionService.create(devolucion);
+    public Devolucion createDevolucion(@RequestBody Devolucion devolucion, @AuthenticationPrincipal Jwt jwt) {
+        Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
+        return devolucionService.create(devolucion, usuario);
     }
 
     @GetMapping("/{folio}/detalle/{codigo}")
@@ -60,5 +63,15 @@ public class DevolucionController {
     @DeleteMapping("/detalles/{id}")
     public void eliminarDetalle(@PathVariable Long id) {
         devolucionService.eliminarDetalle(id);
+    }
+
+    @GetMapping("/temporal")
+    public Devolucion getByFolio(@AuthenticationPrincipal Jwt jwt) {
+        return devolucionService.getTemporalByUser(usuarioService.obtenerUsuarioLogeado(jwt));
+    }
+
+    @DeleteMapping("/{folio}")
+    public void eliminarIngresoEmergencia(@PathVariable Long folio) {
+        devolucionService.delete(folio);
     }
 }

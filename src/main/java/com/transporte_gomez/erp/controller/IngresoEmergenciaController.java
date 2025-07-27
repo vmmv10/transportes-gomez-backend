@@ -3,11 +3,15 @@ package com.transporte_gomez.erp.controller;
 import com.transporte_gomez.erp.dto.IngresosEmergencia;
 import com.transporte_gomez.erp.dto.IngresosEmergenciaDetalle;
 import com.transporte_gomez.erp.dto.IngresosEmergenciaFiltro;
+import com.transporte_gomez.erp.dto.Usuario;
 import com.transporte_gomez.erp.enums.IngresoEmergenciaEstado;
 import com.transporte_gomez.erp.services.IngresoEmergenciaService;
+import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class IngresoEmergenciaController {
     
     private final IngresoEmergenciaService ingresoEmergenciaService;
+    private final UsuarioService usuarioService;
 
     @GetMapping
     public Page<IngresosEmergencia> getAll(Pageable pageable, IngresosEmergenciaFiltro filtro) {
@@ -23,8 +28,9 @@ public class IngresoEmergenciaController {
     }
 
     @PostMapping
-    public IngresosEmergencia create(@RequestBody IngresosEmergencia ingresosEmergencia) {
-        return ingresoEmergenciaService.create(ingresosEmergencia);
+    public IngresosEmergencia create(@RequestBody IngresosEmergencia ingresosEmergencia, @AuthenticationPrincipal Jwt jwt) {
+        Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
+        return ingresoEmergenciaService.create(ingresosEmergencia, usuario);
     }
 
     @GetMapping("/{folio}/detalle/{codigo}")
@@ -60,5 +66,15 @@ public class IngresoEmergenciaController {
     @DeleteMapping("/detalles/{id}")
     public void eliminarDetalle(@PathVariable Integer id) {
         ingresoEmergenciaService.eliminarDetalle(id);
+    }
+
+    @GetMapping("/temporal")
+    public IngresosEmergencia getByFolio(@AuthenticationPrincipal Jwt jwt) {
+        return ingresoEmergenciaService.getTemporalByUser(usuarioService.obtenerUsuarioLogeado(jwt));
+    }
+
+    @DeleteMapping("/{folio}")
+    public void eliminarIngresoEmergencia(@PathVariable Integer folio) {
+        ingresoEmergenciaService.delete(folio);
     }
 }
