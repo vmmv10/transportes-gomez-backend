@@ -35,7 +35,7 @@ public class DocumentoController {
     }
 
     @GetMapping("/{numero}/{tipo}")
-    public Documento getDocumentoByNumero(@PathVariable Long numero, @PathVariable Integer tipo) {
+    public Documento getDocumentoByNumero(@PathVariable String numero, @PathVariable Integer tipo) {
         return documentoService.getByNumero(numero, tipo);
     }
 

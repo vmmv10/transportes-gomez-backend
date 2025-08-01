@@ -1,11 +1,11 @@
 package com.transporte_gomez.erp.specification;
 
-import com.transporte_gomez.erp.dto.IngresosEmergenciaFiltro;
-import com.transporte_gomez.erp.entity.IngresosEmergenciaEntity;
+import com.transporte_gomez.erp.dto.IngresosFiltro;
+import com.transporte_gomez.erp.entity.IngresosEntity;
 import org.springframework.data.jpa.domain.Specification;
 
-public class IngresosEmergenciaSpecification {
-    public static Specification<IngresosEmergenciaEntity> conFiltros(IngresosEmergenciaFiltro filtro){
+public class IngresosSpecification {
+    public static Specification<IngresosEntity> conFiltros(IngresosFiltro filtro){
         return (root, query, cb) -> {
             var predicates = cb.conjunction();
 
@@ -19,6 +19,10 @@ public class IngresosEmergenciaSpecification {
 
             if (filtro.getDocumento() != null) {
                 predicates = cb.and(predicates, cb.equal(root.get("documento"), filtro.getDocumento()));
+            }
+
+            if (filtro.getBodega() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("bodega").get("id"), filtro.getBodega()));
             }
 
             return predicates;

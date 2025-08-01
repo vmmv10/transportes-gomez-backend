@@ -21,9 +21,6 @@ public class DocumentoEntity {
     @JoinColumn(name = "usuario_id")
     private UsuarioEntity usuario;
 
-    @Column(name = "numero")
-    private Long numero;
-
     @Column(name = "imagen")
     private Long imagen;
 
@@ -54,5 +51,8 @@ public class DocumentoEntity {
     @ColumnDefault("false")
     @Column(name = "asignado", nullable = false)
     private Boolean asignado = false;
+
+    @Column(name = "numero", nullable = false, length = Integer.MAX_VALUE)
+    private String numero;
 
 }

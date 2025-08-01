@@ -10,7 +10,7 @@ public class Documento {
 
     private Long id;
     private Usuario usuario;
-    private Long numero;
+    private String numero;
     private Proveedor proveedor;
     private Escuela escuela;
     private List<MultipartFile> files;

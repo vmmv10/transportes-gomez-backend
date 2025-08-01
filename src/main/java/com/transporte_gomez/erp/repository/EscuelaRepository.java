@@ -18,4 +18,7 @@ public interface EscuelaRepository extends JpaRepository<EscuelaEntity, Long> {
     EscuelaEntity findByRbd(String rbd);
 
     Page<EscuelaEntity> findAll(Specification<EscuelaEntity> escuelaEntitySpecificatio, Pageable pageable);
+
+    @Query("select e from EscuelaEntity e where e.activo = ?1")
+    List<EscuelaEntity> findByActivo(Boolean activo);
 }

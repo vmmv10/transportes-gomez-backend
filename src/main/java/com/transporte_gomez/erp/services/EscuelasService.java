@@ -36,7 +36,7 @@ public class EscuelasService {
     }
 
     public List<Escuela> findAll() {
-        List<EscuelaEntity> escuelaEntities = escuelaRepository.findAll();
+        List<EscuelaEntity> escuelaEntities = escuelaRepository.findByActivo(true);
         return escuelaAdapter.toDto(escuelaEntities);
     }
 
@@ -73,6 +73,36 @@ public class EscuelasService {
                 } else {
                     log.warn("No se encontró escuela con RBD: {} nombre {}", establecimiento.getRbd(), establecimiento.getNombre());
                 }
+
+            }
+
+            if(!escuelaEntities.isEmpty()) {
+                escuelaRepository.saveAll(escuelaEntities);
+            }
+        }
+    }
+
+    public void leerJardines(MultipartFile file) throws Exception {
+        try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+            CsvToBean<Establecimiento> csvToBean = new CsvToBeanBuilder<Establecimiento>(reader)
+                    .withType(Establecimiento.class)
+                    .withSeparator(',')
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            List<Establecimiento> establecimientos = csvToBean.parse();
+            List<EscuelaEntity> escuelaEntities = new ArrayList<>();
+            for (Establecimiento establecimiento : establecimientos) {
+                EscuelaEntity escuelaEntity = new EscuelaEntity();
+                escuelaEntity.setRbd(establecimiento.getRbd());
+                escuelaEntity.setNombre(establecimiento.getNombre());
+                escuelaEntity.setComuna(establecimiento.getComuna());
+                escuelaEntity.setLongitud(establecimiento.getLongitud());
+                escuelaEntity.setLatitud(establecimiento.getLatitud());
+                escuelaEntity.setDirector(establecimiento.getDirector());
+                escuelaEntity.setActivo(true);
+
+                escuelaEntities.add(escuelaEntity);
 
             }
 

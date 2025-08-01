@@ -60,13 +60,12 @@ public class OrdenServicioService {
     }
 
     public OrdenServicio createOrdenServicio(OrdenServicio ordenServicio, Usuario usuario) {
-        log.info("OrdenServicio createOrdenServicio: {}", ordenServicio);
         OrdenServicioEntity ordenServicioEntitySave = ordenServicioRepository.save(ordenServicioAdapter.createOrdenServicio(ordenServicio));
         if (ordenServicio.getDetalles() != null && !ordenServicio.getDetalles().isEmpty()) {
             ordenServicioDetalleService.create(ordenServicio.getDetalles(), ordenServicioEntitySave);
         }
         auditoriaService.registrarAuditoria(AuditoriaOperacion.CREADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), ordenServicioEntitySave.getId(), usuario.getId());
-        if (ordenServicioEntitySave.getBodega() != null && ordenServicioEntitySave.getBodega() == 1L) {
+        if (ordenServicioEntitySave.getBodega() != null && ordenServicioEntitySave.getBodega() == 4L) {
             documentoService.asignarDocumento(ordenServicioEntitySave.getDocumento().getId(), true);
         }
         return ordenServicioAdapter.getOrdenServicio(ordenServicioEntitySave, true);

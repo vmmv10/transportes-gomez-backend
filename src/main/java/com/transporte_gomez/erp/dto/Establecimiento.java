@@ -27,4 +27,10 @@ public class Establecimiento {
     @CsvBindByName(column = "FIJA")
     private String fija;
 
+    @CsvBindByName(column = "LONGITUD")
+    private String longitud;
+
+    @CsvBindByName(column = "LATITUD")
+    private String latitud;
+
 }

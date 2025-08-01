@@ -40,7 +40,7 @@ public class DocumentoService {
                 .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado con ID: " + id));
     }
 
-    public Documento getByNumero(Long id, Integer tipo) {
+    public Documento getByNumero(String id, Integer tipo) {
         DocumentoEntity documentoEntity = documentoRepository.findByNumeroAndTipo_Codigo(id, tipo);
         if (documentoEntity == null) {
             throw new IllegalArgumentException("Documento no encontrado con ID: " + id + " y tipo: " + tipo);

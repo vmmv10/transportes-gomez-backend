@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class IngresosEmergenciaDetalle {
+public class IngresosDetalle {
 
     private Integer id;
     private BigDecimal cantidad;

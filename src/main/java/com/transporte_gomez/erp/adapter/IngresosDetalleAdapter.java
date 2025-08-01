@@ -1,25 +1,24 @@
 package com.transporte_gomez.erp.adapter;
 
-import com.transporte_gomez.erp.dto.IngresosEmergenciaDetalle;
-import com.transporte_gomez.erp.entity.IngresosEmergenciaDetalleEntity;
-import com.transporte_gomez.erp.entity.IngresosEmergenciaEntity;
+import com.transporte_gomez.erp.dto.IngresosDetalle;
+import com.transporte_gomez.erp.entity.IngresosDetalleEntity;
 import com.transporte_gomez.erp.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class IngresoEmergenciaDetalleAdapter {
+public class IngresosDetalleAdapter {
 
     private final ItemAdapter itemAdapter;
     private final ItemRepository itemRepository;
 
-    public IngresosEmergenciaDetalle get(IngresosEmergenciaDetalleEntity entity){
+    public IngresosDetalle get(IngresosDetalleEntity entity){
         if (entity == null) {
             return null;
         }
 
-        IngresosEmergenciaDetalle detalle = new IngresosEmergenciaDetalle();
+        IngresosDetalle detalle = new IngresosDetalle();
         detalle.setId(entity.getId());
         detalle.setCantidad(entity.getCantidad());
         detalle.setItem(itemAdapter.getItem(entity.getItem()));
@@ -27,8 +26,8 @@ public class IngresoEmergenciaDetalleAdapter {
         return detalle;
     }
 
-    public IngresosEmergenciaDetalleEntity create(IngresosEmergenciaDetalle detalle) {
-        IngresosEmergenciaDetalleEntity entity = new IngresosEmergenciaDetalleEntity();
+    public IngresosDetalleEntity create(IngresosDetalle detalle) {
+        IngresosDetalleEntity entity = new IngresosDetalleEntity();
         entity.setCantidad(detalle.getCantidad());
 
         if (detalle.getItem() != null && detalle.getItem().getId() != null) {
@@ -39,7 +38,7 @@ public class IngresoEmergenciaDetalleAdapter {
         return entity;
     }
 
-    public IngresosEmergenciaDetalleEntity updateEntity(IngresosEmergenciaDetalle detalle, IngresosEmergenciaDetalleEntity entity) {
+    public IngresosDetalleEntity updateEntity(IngresosDetalle detalle, IngresosDetalleEntity entity) {
         if (detalle == null || entity == null) {
             return entity;
         }

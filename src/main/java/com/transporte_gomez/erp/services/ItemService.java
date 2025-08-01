@@ -44,7 +44,10 @@ public class ItemService {
     }
 
     public Item create(Item item) {
-        log.info("Creando Item: {}", item);
+        ItemEntity existingItem = itemRepository.findByCodigo(item.getCodigo());
+        if (existingItem != null) {
+            throw new IllegalArgumentException("Ya existe un item con el código: " + item.getCodigo());
+        }
         ItemEntity itemEntity = itemAdapter.createItemEntity(item);
         itemEntity = itemRepository.save(itemEntity);
         return itemAdapter.getItem(itemEntity);

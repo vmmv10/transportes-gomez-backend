@@ -1,8 +1,8 @@
 package com.transporte_gomez.erp.adapter;
 
-import com.transporte_gomez.erp.dto.IngresosEmergencia;
-import com.transporte_gomez.erp.entity.IngresosEmergenciaEntity;
-import com.transporte_gomez.erp.enums.IngresoEmergenciaEstado;
+import com.transporte_gomez.erp.dto.Ingresos;
+import com.transporte_gomez.erp.entity.IngresosEntity;
+import com.transporte_gomez.erp.enums.IngresoEstado;
 import com.transporte_gomez.erp.repository.BodegaRepository;
 import com.transporte_gomez.erp.repository.DocumentoTipoRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,20 +10,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class IngresoEmergenciaAdapter {
+public class IngresosAdapter {
 
     private final DocumentoTipoAdapter documentoTipoAdapter;
-    private final IngresoEmergenciaDetalleAdapter ingresoEmergenciaDetalleAdapter;
+    private final IngresosDetalleAdapter ingresoEmergenciaDetalleAdapter;
     private final DocumentoTipoRepository documentoTipoRepository;
     private final BodegaRepository bodegaRepository;
     private final BodegaAdapter bodegaAdapter;
 
-    public IngresosEmergencia toDto(IngresosEmergenciaEntity entity, Boolean conDetalles) {
+    public Ingresos toDto(IngresosEntity entity, Boolean conDetalles) {
         if (entity == null) {
             return null;
         }
 
-        IngresosEmergencia dto = new IngresosEmergencia();
+        Ingresos dto = new Ingresos();
         dto.setId(entity.getId());
         dto.setFecha(String.valueOf(entity.getFecha()));
         dto.setDocumento(entity.getDocumento());
@@ -43,12 +43,12 @@ public class IngresoEmergenciaAdapter {
         return dto;
     }
 
-    public IngresosEmergenciaEntity toEntity(IngresosEmergencia dto) {
+    public IngresosEntity toEntity(Ingresos dto) {
         if (dto == null) {
             return null;
         }
 
-        IngresosEmergenciaEntity entity = new IngresosEmergenciaEntity();
+        IngresosEntity entity = new IngresosEntity();
 
         if (dto.getDocumentoTipo() != null) {
             entity.setDocumentoTipo(documentoTipoRepository.findById(dto.getDocumentoTipo().getId())
@@ -56,13 +56,13 @@ public class IngresoEmergenciaAdapter {
         }
         entity.setDocumento(dto.getDocumento());
         entity.setObservaciones(dto.getObservaciones());
-        entity.setBodega(bodegaRepository.findById(3L)
+        entity.setBodega(bodegaRepository.findById(dto.getBodega().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Bodega no encontrada con ID: " + dto.getBodega().getId())));
-        entity.setEstado(IngresoEmergenciaEstado.TERMPORAL.getCodigo());
+        entity.setEstado(IngresoEstado.TERMPORAL.getCodigo());
         return entity;
     }
 
-    public IngresosEmergenciaEntity updateEntity(IngresosEmergencia dto, IngresosEmergenciaEntity entity) {
+    public IngresosEntity updateEntity(Ingresos dto, IngresosEntity entity) {
         if (dto == null || entity == null) {
             return entity;
         }

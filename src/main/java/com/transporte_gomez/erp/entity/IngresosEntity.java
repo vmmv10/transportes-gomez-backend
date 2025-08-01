@@ -11,8 +11,8 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "ingresos_emergencia", schema = "qa")
-public class IngresosEmergenciaEntity {
+@Table(name = "ingresos", schema = "qa")
+public class IngresosEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -33,7 +33,7 @@ public class IngresosEmergenciaEntity {
     private DocumentoTipoEntity documentoTipo;
 
     @OneToMany(mappedBy = "ingreso", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<IngresosEmergenciaDetalleEntity> detalles;
+    private List<IngresosDetalleEntity> detalles;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "bodega", nullable = false)

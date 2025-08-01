@@ -21,15 +21,16 @@ public class ProveedorAdpater {
     }
 
     public ProveedorEntity createProveedor(Proveedor proveedor) {
-        ProveedorEntity ProveedorEntity = new ProveedorEntity();
+        ProveedorEntity proveedorEntity = new ProveedorEntity();
 
-        ProveedorEntity.setRazonSocial(proveedor.getNombre());
-        ProveedorEntity.setRut(proveedor.getRut());
-        ProveedorEntity.setDireccion(proveedor.getDireccion());
-        ProveedorEntity.setTelefono(proveedor.getTelefono());
-        ProveedorEntity.setEmail(proveedor.getEmail());
+        proveedorEntity.setRazonSocial(proveedor.getNombre());
+        proveedorEntity.setRut(proveedor.getRut());
+        proveedorEntity.setDireccion(proveedor.getDireccion());
+        proveedorEntity.setTelefono(proveedor.getTelefono());
+        proveedorEntity.setEmail(proveedor.getEmail());
+        proveedorEntity.setActivo(true);
 
-        return ProveedorEntity;
+        return proveedorEntity;
     }
 
     public ProveedorEntity updateProveedor(ProveedorEntity ProveedorEntity, Proveedor proveedor) {

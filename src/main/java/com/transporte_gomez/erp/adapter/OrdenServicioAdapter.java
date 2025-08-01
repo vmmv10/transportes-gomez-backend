@@ -3,12 +3,10 @@ package com.transporte_gomez.erp.adapter;
 import com.transporte_gomez.erp.dto.OrdenServicio;
 import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
 import com.transporte_gomez.erp.entity.BodegaEntity;
+import com.transporte_gomez.erp.entity.DocumentoEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioDetalleEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
-import com.transporte_gomez.erp.repository.BodegaRepository;
-import com.transporte_gomez.erp.repository.DocumentoRepository;
-import com.transporte_gomez.erp.repository.EscuelaRepository;
-import com.transporte_gomez.erp.repository.OrdenServicioDetalleRepository;
+import com.transporte_gomez.erp.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +27,7 @@ public class OrdenServicioAdapter {
     private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
     private final EscuelaRepository escuelaRepository;
     private final DocumentoRepository documentoRepository;
+    private final DocumentoTipoRepository documentoTipoRepository;
     private final BodegaRepository bodegaRepository;
     private final BodegaAdapter bodegaAdapter;
 
@@ -68,6 +67,7 @@ public class OrdenServicioAdapter {
         ordenServicioEntity.setFecha(ZonedDateTime.now());
         ordenServicioEntity.setEntregado(false);
         ordenServicioEntity.setObservaciones(ordenServicio.getObservaciones());
+        ordenServicioEntity.setEnRuta(false);
 
         if (ordenServicio.getBodega() != null) {
             BodegaEntity bodegaEntity = bodegaRepository.findById(ordenServicio.getBodega().getId())
@@ -76,7 +76,16 @@ public class OrdenServicioAdapter {
         }
 
         if (ordenServicio.getDocumento() != null && ordenServicio.getDocumento().getId() > 0) {
-            ordenServicioEntity.setDocumento(documentoRepository.findByNumeroAndTipo_Codigo(ordenServicio.getDocumento().getNumero(), ordenServicio.getDocumento().getTipo().getCodigo()));
+            if (ordenServicio.getBodega() != null && ordenServicio.getBodega().getId() == 4L) {
+                ordenServicioEntity.setDocumento(documentoRepository.findByNumeroAndTipo_Codigo(ordenServicio.getDocumento().getNumero(), ordenServicio.getDocumento().getTipo().getCodigo()));
+            } else {
+                DocumentoEntity documentoEntity = new DocumentoEntity();
+                documentoEntity.setNumero(ordenServicio.getDocumento().getNumero());
+                documentoEntity.setTipo(documentoTipoRepository.findByCodigo(ordenServicio.getDocumento().getTipo().getCodigo()));
+                documentoRepository.save(documentoEntity);
+
+                ordenServicioEntity.setDocumento(documentoEntity);
+            }
         }
 
         if (ordenServicio.getEscuela() != null) {

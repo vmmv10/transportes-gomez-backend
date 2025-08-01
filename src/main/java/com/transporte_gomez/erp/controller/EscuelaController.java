@@ -48,4 +48,9 @@ public class EscuelaController {
     public void cargarCsv(@RequestParam("file") MultipartFile file) throws Exception {
         escuelasService.leerEstablecimientos(file);
     }
+
+    @PostMapping("/cargar/jardines")
+    public void cargarJardines(@RequestParam("file") MultipartFile file) throws Exception {
+        escuelasService.leerJardines(file);
+    }
 }

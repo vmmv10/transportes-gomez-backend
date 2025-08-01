@@ -79,6 +79,7 @@ public class ItemAdapter {
         itemEntity.setDescripcion(item.getDescripcion());
         itemEntity.setCreadoEn(Instant.now());
         itemEntity.setCodigo(item.getCodigo());
+        itemEntity.setActivo(true);
 
         if (item.getUnidadMedida() != null && item.getUnidadMedida().getId() != null) {
             itemEntity.setUnidadMedida(unidadesMedidaRepository.findById(item.getUnidadMedida().getId())

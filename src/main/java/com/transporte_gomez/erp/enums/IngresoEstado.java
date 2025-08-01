@@ -1,6 +1,6 @@
 package com.transporte_gomez.erp.enums;
 
-public enum IngresoEmergenciaEstado {
+public enum IngresoEstado {
     TERMPORAL("Temporal", 0),
     ABIERTO("Abierto", 1),
     CERRADO("Cerrado", 2);
@@ -8,7 +8,7 @@ public enum IngresoEmergenciaEstado {
     private final String descripcion;
     private final Integer codigo;
 
-    IngresoEmergenciaEstado(String descripcion, Integer codigo) {
+    IngresoEstado(String descripcion, Integer codigo) {
         this.descripcion = descripcion;
         this.codigo = codigo;
     }
