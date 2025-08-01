@@ -50,4 +50,7 @@ public class ItemEntity {
     @JoinColumn(name = "marca")
     private MarcaEntity marca;
 
+    @OneToMany( mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private java.util.List<ItemCodigoProveedorEntity> codigosProveedor;
+
 }

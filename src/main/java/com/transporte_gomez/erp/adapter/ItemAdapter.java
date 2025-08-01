@@ -17,10 +17,11 @@ public class ItemAdapter {
 
     private final UnidadesMedidaRepository unidadesMedidaRepository;
     private final UnidadMedidaAdapter unidadMedidaAdapter;
-    private final CategoriaAdapter categoriaAdapter;
-    private final MarcaAdapter marcaAdapter;
-    private final MarcaRepository marcaRepository;
     private final CategoriaRepository categoriaRepository;
+    private final CategoriaAdapter categoriaAdapter;
+    private final MarcaRepository marcaRepository;
+    private final MarcaAdapter marcaAdapter;
+    private final ItemCodigoProveedorAdapter itemCodigoProveedorAdapter;
 
     public Item getItem(ItemEntity itemEntity) {
         Item item = new Item();
@@ -41,13 +42,14 @@ public class ItemAdapter {
             item.setCategoria(categoriaAdapter.get(itemEntity.getCategoria()));
         }
 
-        return item;
-    }
+        if (itemEntity.getCodigosProveedor() != null && !itemEntity.getCodigosProveedor().isEmpty()) {
+            item.setCodigosProveedor(itemEntity.getCodigosProveedor()
+                    .stream()
+                    .map(itemCodigoProveedorAdapter::get)
+                    .toList());
+        }
 
-    public List<Item> getItems(List<ItemEntity> itemEntityList) {
-        return itemEntityList.stream()
-                .map(this::getItem)
-                .toList();
+        return item;
     }
 
     public ItemEntity updateItemEntity(Item item, ItemEntity itemEntity) {

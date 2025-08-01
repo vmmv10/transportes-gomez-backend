@@ -4,6 +4,8 @@ import com.transporte_gomez.erp.dto.Marca;
 import com.transporte_gomez.erp.entity.MarcaEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 public class MarcaAdapter {
 
@@ -16,5 +18,23 @@ public class MarcaAdapter {
         marca.setNombre(marcaEntity.getNombre());
         marca.setDescripcion(marcaEntity.getDescripcion());
         return marca;
+    }
+
+    public MarcaEntity create(Marca marca) {
+        if (marca == null) {
+            return null;
+        }
+        MarcaEntity marcaEntity = new MarcaEntity();
+        marcaEntity.setNombre(marca.getNombre());
+        marcaEntity.setDescripcion(marca.getDescripcion());
+        marcaEntity.setActivo(true);
+        marcaEntity.setFechaCreacion(Instant.now());
+        return marcaEntity;
+    }
+
+    public MarcaEntity update(MarcaEntity updatedMarcaEntity, Marca marca) {
+        updatedMarcaEntity.setNombre(marca.getNombre());
+        updatedMarcaEntity.setDescripcion(marca.getDescripcion());
+        return updatedMarcaEntity;
     }
 }

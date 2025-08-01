@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +45,12 @@ public class OrdenServicioAdapter {
         if (ordenServicioEntity.getDocumento() != null) {
             ordenServicio.setDocumento(documentoAdapter.getDocumento(ordenServicioEntity.getDocumento()));
         }
-        ordenServicio.setFecha(ordenServicioEntity.getFecha().toOffsetDateTime());
+
+        OffsetDateTime fechaChile = ordenServicioEntity.getFecha()
+                .withZoneSameInstant(ZoneId.of("America/Santiago"))
+                .toOffsetDateTime();
+
+        ordenServicio.setFecha(fechaChile);
         ordenServicio.setEscuela(escuelaAdapter.toDto(ordenServicioEntity.getEscuela()));
         ordenServicio.setEntregado(ordenServicioEntity.getEntregado());
         ordenServicio.setObservaciones(ordenServicioEntity.getObservaciones());
