@@ -5,6 +5,9 @@ import com.transporte_gomez.erp.services.ImagenService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @AllArgsConstructor
@@ -23,4 +26,11 @@ public class ImagenController {
     public void deleteImagen(@PathVariable Long id) {
         imagenService.eliminarImagen(id);
     }
+
+    @GetMapping("/test-write")
+    public void testWrite() throws IOException {
+        String path = "/home/servicios/transportes-gomez/images/ordenes/normal/test.txt";
+        Files.writeString(Paths.get(path), "Test de escritura desde Spring Boot");
+    }
+
 }

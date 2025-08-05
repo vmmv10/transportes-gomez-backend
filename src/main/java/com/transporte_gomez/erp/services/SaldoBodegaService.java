@@ -35,4 +35,8 @@ public class SaldoBodegaService {
     public SaldoBodega findByCodigo(String codigo) {
         return saldoBodegaAdapter.get(saldosBodegaRepository.findByItem_Codigo(codigo));
     }
+
+    public void ajustarSaldoBodega(SaldoBodega saldoBodega, Long bodegaId) {
+        saldoBodegaAdapter.ajustarSaldoBodega(saldoBodega, bodegaId);
+    }
 }

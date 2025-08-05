@@ -26,6 +26,10 @@ public class SaldoBodegaSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("item").get("categoria"), filtro.getCategoria()));
             }
 
+            if (filtro.getNombre() != null) {
+                predicates = cb.and(predicates, cb.like(cb.lower(root.get("item").get("nombre")), "%" + filtro.getNombre().toLowerCase() + "%"));
+            }
+
             return predicates;
         };
     }

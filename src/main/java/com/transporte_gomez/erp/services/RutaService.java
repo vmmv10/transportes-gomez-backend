@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -66,11 +67,12 @@ public class RutaService {
     }
 
     public Ruta obtenerRutaUsuarioAndFechaHoy(Usuario usuario) {
-        Optional<RutaEntity> rutaEntityOptional = rutaRepository.findByFechaAndChofer_Id(LocalDate.now(), usuario.getId());
+        LocalDate hoyChile = LocalDate.now(ZoneId.of("America/Santiago"));
+        Optional<RutaEntity> rutaEntityOptional = rutaRepository.findByChofer_IdAndFechaAndEstado(usuario.getId(), hoyChile, "PENDIENTE");
         if (rutaEntityOptional.isEmpty()) {
-            throw new RuntimeException("Ruta no encontrada para el usuario con id: " + usuario.getId() + " y fecha: " + LocalDate.now());
+            return null;
         }
-        return  rutaAdapter.getRuta(rutaEntityOptional.get());
+        return rutaAdapter.getRuta(rutaEntityOptional.get());
     }
 
     public Ruta comenzarRuta(Integer id) {

@@ -33,7 +33,7 @@ public class OrdenServicioDetalleService {
             }
             detalleEntity = ordenServicioDetalleRepository.save(detalleEntity);
             if (ordenServicioEntitySave.getBodega() != null && ordenServicioEntitySave.getBodega() != 4L) {
-                movimientoInventarioService.create(MovimientoInventarioTipo.ORDEN_SERVICIO, MovimientoInventarioTipoOperacion.SALIDA, detalleEntity.getId(), ordenServicioEntitySave.getBodega());
+                movimientoInventarioService.create(MovimientoInventarioTipo.ORDEN_SERVICIO, MovimientoInventarioTipoOperacion.SALIDA, detalleEntity.getId(), ordenServicioEntitySave.getBodega(), ordenServicioEntitySave.getId());
                 saldoBodegaService.createOrUpdate(detalle.getSaldoBodega().getItem().getId(), ordenServicioEntitySave.getBodega(), "SALIDA", detalleEntity.getCantidad());
             }
         }

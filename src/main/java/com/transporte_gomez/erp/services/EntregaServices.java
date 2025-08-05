@@ -16,8 +16,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +33,7 @@ public class EntregaServices {
     private final EntregaRepository entregaRepository;
     private final EntregaAdapter entregaAdapter;
     private final RutaRepository rutaRepository;
+    private final OrdenServicioService ordenServicioService;
 
     public Page<Entrega> getEntregas(Pageable pageable, EntregaFiltro filtro) {
         return entregaRepository.findAll(EntregaSpecification.conFiltros(filtro), pageable)
@@ -101,7 +105,7 @@ public class EntregaServices {
                 .collect(Collectors.toList());
     }
 
-    public void entregar(Integer id) {
+    public void entregar(Integer id, List<MultipartFile> files) {
         EntregaEntity entregaEntity = entregaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entrega not found with id: " + id));
 
@@ -114,7 +118,14 @@ public class EntregaServices {
 
         OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
         ordenServicioEntity.setEnRuta(false);
-        ordenServicioEntity.setFechaEntrega(Instant.now());
+        ZoneId zoneId = ZoneId.of("America/Santiago");
+        LocalDate fecha = LocalDate.now(zoneId);
+        Instant fechaChile = fecha.atStartOfDay(zoneId).toInstant();
+        ordenServicioEntity.setFechaEntrega(fechaChile);
+        ordenServicioEntity.setEntregado(true);
+        if (files != null && !files.isEmpty()) {
+            ordenServicioService.asignarImagen(files, ordenServicioEntity);
+        }
         ordenServicioRepository.save(ordenServicioEntity);
 
         List<EntregaEntity> entregas = entregaRepository.findByRuta_Id(entregaEntity.getRuta().getId());
@@ -127,7 +138,7 @@ public class EntregaServices {
         }
 
         if (sinEntregas) {
-            RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+            RutaEntity rutaEntity = rutaRepository.getReferenceById(entregaEntity.getRuta().getId());
             rutaEntity.setFin(Instant.now());
             rutaEntity.setEnTransito(false);
             rutaEntity.setEstado("FINALIZADA");

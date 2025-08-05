@@ -42,4 +42,7 @@ public class MovimientosInventarioEntity {
     @Column(name = "observaciones", length = Integer.MAX_VALUE)
     private String observaciones;
 
+    @Column(name = "entidad_id")
+    private Long entidadId;
+
 }

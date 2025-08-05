@@ -40,9 +40,6 @@ public class ImagenService {
             throw new IllegalArgumentException("El archivo está vacío.");
         }
 
-        log.info("📁 Directorio de subida: {}", uploadDir);
-        log.info("📁 tipo: {}", file.getContentType());
-
         String contentType = file.getContentType();
         if (contentType == null ||
                 (!contentType.startsWith("image/") && !contentType.equals("application/pdf"))) {
@@ -88,7 +85,7 @@ public class ImagenService {
         imagen.setEntidadId(entidadId);
         imagen.setNombreOriginal(nombreOriginal);
         imagen.setRuta(rutaRelativa);
-        imagen.setRutaThumbnail(rutaThumbRelativa); // puede ser null si es PDF
+        imagen.setRutaThumbnail(rutaThumbRelativa);
 
         imagenRepository.save(imagen);
     }

@@ -15,4 +15,7 @@ public interface RutaRepository extends JpaRepository<RutaEntity, Integer> {
 
     @Query("select r from RutaEntity r where r.fecha = ?1 and r.chofer.id = ?2")
     Optional<RutaEntity> findByFechaAndChofer_Id(LocalDate fecha, Long id);
+
+    @Query("select r from RutaEntity r where r.chofer.id = ?1 and r.fecha = ?2 and r.estado = ?3")
+    Optional<RutaEntity> findByChofer_IdAndFechaAndEstado(Long id, LocalDate fecha, String estado);
 }

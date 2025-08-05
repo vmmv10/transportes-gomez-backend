@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +32,9 @@ public class RutaAdapter {
     public Ruta getRuta(RutaEntity rutaEntity) {
         Ruta ruta = new Ruta();
         ruta.setId(rutaEntity.getId());
-        ruta.setFecha(rutaEntity.getFecha());
+        LocalDate fecha = rutaEntity.getFecha();
+        ZonedDateTime fechaChile = fecha.atStartOfDay(ZoneId.of("America/Santiago"));
+        ruta.setFecha(fechaChile.toLocalDate());
         ruta.setEstado(rutaEntity.getEstado());
         ruta.setEnTransito(rutaEntity.getEnTransito());
 
@@ -60,7 +64,9 @@ public class RutaAdapter {
     public RutaEntity createRuta(Ruta ruta) {
         RutaEntity rutaEntity = new RutaEntity();
         rutaEntity.setId(ruta.getId());
-        rutaEntity.setFecha(ruta.getFecha());
+        LocalDate fecha = ruta.getFecha();
+        ZonedDateTime fechaChile = fecha.atStartOfDay(ZoneId.of("America/Santiago"));
+        rutaEntity.setFecha(fechaChile.toLocalDate());
         rutaEntity.setEstado("PENDIENTE");
 
         if (ruta.getChofer() != null) {

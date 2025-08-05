@@ -39,7 +39,7 @@ import java.util.List;
 public class OrdenServicioService {
 
     private final DocumentoService documentoService;
-    @Value("${ruta.documentos}")
+    @Value("${ruta.ordenes}")
     private String rutaOrdenes;
 
     private final OrdenServicioDetalleService ordenServicioDetalleService;
@@ -78,6 +78,9 @@ public class OrdenServicioService {
         OrdenServicioEntity updatedEntity = ordenServicioRepository.save(ordenServicioAdapter.updateOrdenServicio(ordenServicioEntity, ordenServicio));
         if (ordenServicio.getDetalles() != null && !ordenServicio.getDetalles().isEmpty()) {
             ordenServicioDetalleService.update(ordenServicio.getDetalles(), updatedEntity);
+        }
+        if (files != null && !files.isEmpty()) {
+            asignarImagen(files, updatedEntity);
         }
         auditoriaService.registrarAuditoria(AuditoriaOperacion.ACTUALIZADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), updatedEntity.getId(), usuario.getId());
 
@@ -312,5 +315,17 @@ public class OrdenServicioService {
 
     public void deleteDetalle(Long id) {
         ordenServicioDetalleService.delete(id);
+    }
+
+    public void asignarImagen(List<MultipartFile> files, OrdenServicioEntity ordenServicio) {
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                try {
+                    imagenService.guardarArchivo(file, Modulo.ORDEN_SERVICIO.getCodigo(), ordenServicio.getId(), rutaOrdenes);
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al guardar la imagen: " + e.getMessage(), e);
+                }
+            }
+        }
     }
 }

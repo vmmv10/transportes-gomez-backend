@@ -2,7 +2,8 @@ package com.transporte_gomez.erp.enums;
 
 public enum MovimientoInventarioTipo {
     ORDEN_SERVICIO("ORDEN_SERVICIO", 2),
-    INGRESO("INGRESO", 1);
+    INGRESO("INGRESO", 1),
+    AJUSTE("AJUSTE", 3);
 
     private final String tipo;
     private final Integer id;
