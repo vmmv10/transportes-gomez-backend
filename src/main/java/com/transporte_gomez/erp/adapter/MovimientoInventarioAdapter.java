@@ -27,9 +27,10 @@ public class MovimientoInventarioAdapter {
     public MovimientosInventarioEntity crearMovimiento(
             MovimientoInventarioTipo origenTipo,
             MovimientoInventarioTipoOperacion operacion,
-            Long detalleId,
+            Long itemId,
             Long bodegaId,
-            Long entidadId
+            Long entidadId,
+            BigDecimal cantidad
     ) {
         MovimientosInventarioEntity movimiento = new MovimientosInventarioEntity();
         movimiento.setBodega(bodegaRepository.getReferenceById(bodegaId));
@@ -39,17 +40,13 @@ public class MovimientoInventarioAdapter {
 
         switch (origenTipo) {
             case INGRESO -> {
-                IngresosDetalleEntity ingresoDetalle = ingresosEmergenciaDetalleRepository.findById(detalleId.intValue())
-                        .orElseThrow(() -> new IllegalArgumentException("Ingreso emergencia detalle no encontrado con ID: " + detalleId));
-                movimiento.setItem(itemRepository.getReferenceById(ingresoDetalle.getItem().getId()));
-                movimiento.setCantidad(ingresoDetalle.getCantidad());
+                movimiento.setItem(itemRepository.getReferenceById(itemId));
+                movimiento.setCantidad(cantidad);
                 movimiento.setTipo(MovimientoInventarioTipo.INGRESO.getId());
             }
             case ORDEN_SERVICIO -> {
-                OrdenServicioDetalleEntity ordenServicioDetalle = ordenServicioDetalleRepository.findById(detalleId)
-                        .orElseThrow(() -> new IllegalArgumentException("Orden de servicio detalle no encontrado con ID: " + detalleId));
-                movimiento.setItem(itemRepository.getReferenceById(ordenServicioDetalle.getItem()));
-                movimiento.setCantidad(ordenServicioDetalle.getCantidad());
+                movimiento.setItem(itemRepository.getReferenceById(itemId));
+                movimiento.setCantidad(cantidad);
                 movimiento.setTipo(MovimientoInventarioTipo.ORDEN_SERVICIO.getId());
             }
             default -> throw new IllegalArgumentException("Tipo de origen no soportado: " + origenTipo);

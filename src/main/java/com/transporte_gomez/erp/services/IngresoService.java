@@ -94,7 +94,7 @@ public class IngresoService {
         if (IngresoEstado.CERRADO.getCodigo().equals(estado)) {
             ingresoEntity.setFecha(Instant.now());
             ingresoEntity.getDetalles().forEach(detalle -> {
-                movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getId().longValue(), ingresoEntity.getBodega().getId(), Long.valueOf(folio));
+                movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getItem().getId(), ingresoEntity.getBodega().getId(), Long.valueOf(folio), detalle.getCantidad());
                 saldoBodegaService.createOrUpdate(detalle.getItem().getId(), ingresoEntity.getBodega().getId(), "ENTRADA", detalle.getCantidad());
             });
         }
@@ -103,9 +103,6 @@ public class IngresoService {
 
     public void modificarCantidadDetalle(Integer detalleId, BigDecimal cantidad) {
         IngresosDetalleEntity ingresoDetalleEntity = ingresosDetalleRepository.getReferenceById(detalleId);
-        if (ingresoDetalleEntity == null) {
-            throw new IllegalArgumentException("Detalle no encontrado con ID: " + detalleId);
-        }
         if (cantidad.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("La cantidad no puede ser negativa");
         }

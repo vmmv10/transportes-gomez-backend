@@ -10,9 +10,11 @@ import com.transporte_gomez.erp.repository.OrdenServicioDetalleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -33,30 +35,78 @@ public class OrdenServicioDetalleService {
             }
             detalleEntity = ordenServicioDetalleRepository.save(detalleEntity);
             if (ordenServicioEntitySave.getBodega() != null && ordenServicioEntitySave.getBodega() != 4L) {
-                movimientoInventarioService.create(MovimientoInventarioTipo.ORDEN_SERVICIO, MovimientoInventarioTipoOperacion.SALIDA, detalleEntity.getId(), ordenServicioEntitySave.getBodega(), ordenServicioEntitySave.getId());
+                movimientoInventarioService.create(MovimientoInventarioTipo.ORDEN_SERVICIO, MovimientoInventarioTipoOperacion.SALIDA, detalleEntity.getItem(), ordenServicioEntitySave.getBodega(), ordenServicioEntitySave.getId(), detalleEntity.getCantidad());
                 saldoBodegaService.createOrUpdate(detalle.getSaldoBodega().getItem().getId(), ordenServicioEntitySave.getBodega(), "SALIDA", detalleEntity.getCantidad());
             }
         }
     }
 
+    @Transactional
     public void update(List<OrdenServicioDetalle> ordenServicioDetalleList, OrdenServicioEntity ordenServicioEntity) {
-        List<OrdenServicioDetalleEntity> ordenServicioDetalleEntitySave = new ArrayList<>();
+        if (ordenServicioDetalleList == null) {
+            throw new IllegalArgumentException("Lista de detalles no puede ser nula");
+        }
+
+        List<OrdenServicioDetalleEntity> nuevosDetalles = new ArrayList<>();
+        List<OrdenServicioDetalleEntity> detallesActuales = ordenServicioEntity.getDetalles();
+
         for (OrdenServicioDetalle detalle : ordenServicioDetalleList) {
             OrdenServicioDetalleEntity detalleEntity;
+
             if (detalle.getId() == null || detalle.getId() <= 0) {
                 detalleEntity = ordenServicioDetalleAdapter.createOrdenServicioDetalle(detalle);
+                if (detalle.getSaldoBodega() != null && detalle.getSaldoBodega().getItem() != null) {
+                    detalleEntity.setItem(detalle.getSaldoBodega().getItem().getId());
+                    movimientoInventarioService.create(
+                            MovimientoInventarioTipo.ORDEN_SERVICIO,
+                            MovimientoInventarioTipoOperacion.SALIDA,
+                            detalle.getSaldoBodega().getItem().getId(),
+                            ordenServicioEntity.getBodega(),
+                            ordenServicioEntity.getId(),
+                            detalle.getCantidad()
+                    );
+                    saldoBodegaService.createOrUpdate(detalle.getSaldoBodega().getItem().getId(), ordenServicioEntity.getBodega(), "SALIDA", detalleEntity.getCantidad());
+                }
             } else {
                 detalleEntity = ordenServicioDetalleRepository.findById(detalle.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Detalle no encontrado con ID: " + detalle.getId()));
+
                 detalleEntity = ordenServicioDetalleAdapter.updateOrdenServicioDetalle(detalle, detalleEntity);
+
+                if (debeActualizarInventario(ordenServicioEntity.getBodega())) {
+                    movimientoInventarioService.modificarCantidad(
+                            MovimientoInventarioTipo.ORDEN_SERVICIO,
+                            detalleEntity.getItem(),
+                            ordenServicioEntity.getBodega(),
+                            ordenServicioEntity.getId(),
+                            detalleEntity.getCantidad()
+                    );
+                }
             }
+
             detalleEntity.setOrdenServicio(ordenServicioEntity);
-            ordenServicioDetalleEntitySave.add(detalleEntity);
+            nuevosDetalles.add(detalleEntity);
         }
-        ordenServicioDetalleRepository.saveAll(ordenServicioDetalleEntitySave);
+
+        ordenServicioDetalleRepository.saveAll(nuevosDetalles);
     }
 
+    private boolean debeActualizarInventario(Long bodegaId) {
+        return bodegaId != null && !Objects.equals(bodegaId, 4L);
+    }
+
+    @Transactional
     public void delete(Long id) {
-        ordenServicioDetalleRepository.deleteById(id);
+       OrdenServicioDetalleEntity ordenServicioDetalleEntity = ordenServicioDetalleRepository.getReferenceById(id);
+
+        if (debeActualizarInventario(ordenServicioDetalleEntity.getOrdenServicio().getBodega())) {
+            movimientoInventarioService.deleteMovimiento(
+                    MovimientoInventarioTipo.ORDEN_SERVICIO,
+                    ordenServicioDetalleEntity.getItem(),
+                    ordenServicioDetalleEntity.getOrdenServicio().getBodega(),
+                    ordenServicioDetalleEntity.getOrdenServicio().getId()
+            );
+        }
+        ordenServicioDetalleRepository.delete(ordenServicioDetalleEntity);
     }
 }

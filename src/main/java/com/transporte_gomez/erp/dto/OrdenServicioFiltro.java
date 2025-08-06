@@ -10,4 +10,5 @@ public class OrdenServicioFiltro {
     private Long proveedorId;
     private Long documentoId;
     private Boolean enRuta;
+    private Boolean entregado;
 }

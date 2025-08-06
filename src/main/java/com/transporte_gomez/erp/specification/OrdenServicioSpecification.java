@@ -26,6 +26,14 @@ public class OrdenServicioSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("enRuta"), filtro.getEnRuta()));
             }
 
+            if (filtro.getId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("id"), filtro.getId()));
+            }
+
+            if (filtro.getEntregado() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("entregado"), filtro.getEntregado()));
+            }
+
             return predicates;
         };
     }

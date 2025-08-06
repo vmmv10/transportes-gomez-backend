@@ -63,7 +63,7 @@ public class OrdenServicioController {
         return ordenServicioService.generarPdf(id);
     }
 
-    @DeleteMapping("/detalleS/{detalleId}")
+    @DeleteMapping("/detalles/{detalleId}")
     public void deleteDetalle(@PathVariable Long detalleId) {
         ordenServicioService.deleteDetalle(detalleId);
     }

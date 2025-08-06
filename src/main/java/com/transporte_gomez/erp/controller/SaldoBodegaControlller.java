@@ -27,4 +27,9 @@ public class SaldoBodegaControlller {
     public SaldoBodega findByCodigo(@PathVariable String codigo) {
         return saldoBodegaService.findByCodigo(codigo);
     }
+
+    @GetMapping("/{id}/bodega/{bodegaId}")
+    public SaldoBodega getSaldoBodegaById(@PathVariable Long id, @PathVariable Long bodegaId) {
+        return saldoBodegaService.getSaldoBodegaById(id, bodegaId);
+    }
 }

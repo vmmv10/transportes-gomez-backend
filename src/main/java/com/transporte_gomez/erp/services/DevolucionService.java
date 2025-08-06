@@ -94,7 +94,7 @@ public class DevolucionService {
         if (DevolucionEstado.CERRADO.getCodigo().equals(estado)) {
             devolucionEntity.setFecha(Instant.now());
             devolucionEntity.getDevolucionesDetalles().forEach(detalle -> {
-                movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getId(), 2L, devolucionEntity.getId());
+                movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getItem().getId(), 2L, devolucionEntity.getId(), detalle.getCantidad());
                 saldoBodegaService.createOrUpdate(detalle.getItem().getId(), 2l, "ENTRADA", detalle.getCantidad());
             });
         }

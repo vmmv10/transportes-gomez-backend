@@ -8,9 +8,11 @@ import com.transporte_gomez.erp.dto.OrdenServicio;
 import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
 import com.transporte_gomez.erp.dto.OrdenServicioFiltro;
 import com.transporte_gomez.erp.dto.Usuario;
+import com.transporte_gomez.erp.entity.OrdenServicioDetalleEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.enums.AuditoriaOperacion;
 import com.transporte_gomez.erp.enums.Modulo;
+import com.transporte_gomez.erp.exception.OrdenServicioException;
 import com.transporte_gomez.erp.repository.OrdenServicioRepository;
 import com.transporte_gomez.erp.specification.OrdenServicioSpecification;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfPTable;
@@ -87,7 +90,13 @@ public class OrdenServicioService {
         return ordenServicioAdapter.getOrdenServicio(updatedEntity, true);
     }
 
+    @Transactional
     public void deleteOrdenServicio(Long id) {
+        OrdenServicioEntity ordenServicio = ordenServicioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Orden de servicio no encontrada con ID: " + id));
+        for (OrdenServicioDetalleEntity detalle : ordenServicio.getDetalles()) {
+            ordenServicioDetalleService.delete(detalle.getId());
+        }
         ordenServicioRepository.deleteById(id);
     }
 
@@ -112,7 +121,6 @@ public class OrdenServicioService {
 
             Font titleFont = new Font(Font.HELVETICA, 18, Font.BOLD, Color.BLACK); /// azul
             Font titleFont2 = new Font(Font.HELVETICA, 13, Font.BOLD, Color.BLACK); /// azul
-            Font normalFont = new Font(Font.HELVETICA, 12, Font.NORMAL, Color.BLACK);
             Font boldFont = new Font(Font.HELVETICA, 12, Font.BOLD, Color.DARK_GRAY);
             Paragraph title = new Paragraph("Sociedad Comercial Gomez Velásquez Ltda", titleFont);
             Color color = new Color(220, 230, 241);
@@ -128,7 +136,7 @@ public class OrdenServicioService {
             PdfPTable tableOrden = new PdfPTable(2);
             tableOrden.setWidthPercentage(100);
             tableOrden.addCell(CeldaSinLineas("N°: " + orden.getId(), Element.ALIGN_LEFT));
-            tableOrden.addCell(CeldaSinLineas("Fecha Emisión: " + orden.getFecha().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), Element.ALIGN_RIGHT));
+            //tableOrden.addCell(CeldaSinLineas("Fecha Emisión: " + orden.getFecha().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), Element.ALIGN_RIGHT));
             doc.add(tableOrden);
             doc.add(new Paragraph(" "));
 
@@ -183,7 +191,6 @@ public class OrdenServicioService {
 
             PdfPTable tableInsumosTitulo = new PdfPTable(2);
             tableInsumosTitulo.setWidthPercentage(100);
-            PdfPCell cellTituloInsumo = new PdfPCell(new Phrase("Insumos", boldFont));
             cell.setBackgroundColor(color); // celeste claro
             cell.setPadding(4f);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -283,26 +290,6 @@ public class OrdenServicioService {
         return cell;
     }
 
-    private PdfPCell celdaBottom(String texto, int posicion) {
-        Font normalFont = new Font(Font.HELVETICA, 12, Font.NORMAL, Color.BLACK);
-        PdfPCell cell = new PdfPCell(new Phrase(texto, normalFont));
-        cell.setBorder(Rectangle.BOTTOM);
-        cell.setPadding(6f);
-        cell.setHorizontalAlignment(posicion);
-        cell.setBorderColor(Color.LIGHT_GRAY);
-        return cell;
-    }
-
-    private PdfPCell celdaBottomLimpio(String texto, int posicion) {
-        Font normalFont = new Font(Font.HELVETICA, 12, Font.NORMAL, Color.BLACK);
-        PdfPCell cell = new PdfPCell(new Phrase(texto, normalFont));
-        cell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP);
-        cell.setPadding(6f);
-        cell.setHorizontalAlignment(posicion);
-        cell.setBorderColor(Color.LIGHT_GRAY);
-        return cell;
-    }
-
     private PdfPCell celdaTopLimpio(String texto, int posicion) {
         Font normalFont = new Font(Font.HELVETICA, 12, Font.NORMAL, Color.BLACK);
         PdfPCell cell = new PdfPCell(new Phrase(texto, normalFont));
@@ -323,7 +310,7 @@ public class OrdenServicioService {
                 try {
                     imagenService.guardarArchivo(file, Modulo.ORDEN_SERVICIO.getCodigo(), ordenServicio.getId(), rutaOrdenes);
                 } catch (Exception e) {
-                    throw new RuntimeException("Error al guardar la imagen: " + e.getMessage(), e);
+                    throw new OrdenServicioException("Error al guardar la imagen: " + e.getMessage(), e);
                 }
             }
         }

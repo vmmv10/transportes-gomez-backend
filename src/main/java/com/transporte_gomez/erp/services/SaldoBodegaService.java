@@ -3,6 +3,7 @@ package com.transporte_gomez.erp.services;
 import com.transporte_gomez.erp.adapter.SaldoBodegaAdapter;
 import com.transporte_gomez.erp.dto.SaldoBodega;
 import com.transporte_gomez.erp.dto.SaldoBodegaFiltro;
+import com.transporte_gomez.erp.entity.SaldosBodegaEntity;
 import com.transporte_gomez.erp.repository.SaldosBodegaRepository;
 import com.transporte_gomez.erp.specification.SaldoBodegaSpecification;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +39,13 @@ public class SaldoBodegaService {
 
     public void ajustarSaldoBodega(SaldoBodega saldoBodega, Long bodegaId) {
         saldoBodegaAdapter.ajustarSaldoBodega(saldoBodega, bodegaId);
+    }
+
+    public SaldoBodega getSaldoBodegaById(Long id, Long bodega) {
+        SaldosBodegaEntity saldosBodegaEntity = saldosBodegaRepository.findByBodega_IdAndItem_Id(bodega, id);
+        if (saldosBodegaEntity == null) {
+            throw new IllegalArgumentException("Saldo de bodega no encontrado para el item con ID: " + id + " y bodega con ID: " + bodega);
+        }
+        return saldoBodegaAdapter.get(saldosBodegaEntity);
     }
 }
