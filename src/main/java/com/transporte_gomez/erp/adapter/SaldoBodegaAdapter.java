@@ -2,6 +2,8 @@ package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.SaldoBodega;
 import com.transporte_gomez.erp.entity.SaldosBodegaEntity;
+import com.transporte_gomez.erp.enums.MovimientoInventarioTipo;
+import com.transporte_gomez.erp.enums.MovimientoInventarioTipoOperacion;
 import com.transporte_gomez.erp.repository.BodegaRepository;
 import com.transporte_gomez.erp.repository.ItemRepository;
 import com.transporte_gomez.erp.repository.SaldosBodegaRepository;
@@ -65,5 +67,6 @@ public class SaldoBodegaAdapter {
         }
         saldosBodegaEntity.setCantidad(saldoBodega.getSaldo());
         saldosBodegaRepository.save(saldosBodegaEntity);
+        movimientoInventarioService.ajustarSaldoBodega(saldoBodega,  bodegaId);
     }
 }

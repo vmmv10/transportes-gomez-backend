@@ -62,6 +62,7 @@ public class MovimientoInventarioAdapter {
         movimiento.setCantidad(cantidad);
         movimiento.setTipo(MovimientoInventarioTipo.AJUSTE.getId());
         movimiento.setFecha(Instant.now());
+        movimiento.setTipoMovimiento(MovimientoInventarioTipoOperacion.AJUSTE.getTipo());
 
         return movimiento;
     }
