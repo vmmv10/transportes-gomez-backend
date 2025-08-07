@@ -12,4 +12,5 @@ public class SaldoBodegaFiltro {
     private Integer marca;
     private Integer categoria;
     private BigDecimal saldoBodega;
+    private String codigo;
 }

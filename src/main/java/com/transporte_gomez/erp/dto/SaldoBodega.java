@@ -8,5 +8,4 @@ public class SaldoBodega {
     private Integer id;
     private Item item;
     private BigDecimal saldo;
-    private BigDecimal cantidad;
 }
