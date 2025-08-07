@@ -136,6 +136,7 @@ public class OrdenServicioService {
             PdfPTable tableOrden = new PdfPTable(2);
             tableOrden.setWidthPercentage(100);
             tableOrden.addCell(CeldaSinLineas("N°: " + orden.getId(), Element.ALIGN_LEFT));
+            tableOrden.addCell(CeldaSinLineas("", Element.ALIGN_RIGHT));
             //tableOrden.addCell(CeldaSinLineas("Fecha Emisión: " + orden.getFecha().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")), Element.ALIGN_RIGHT));
             doc.add(tableOrden);
             doc.add(new Paragraph(" "));
