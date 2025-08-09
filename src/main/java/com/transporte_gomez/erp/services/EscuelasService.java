@@ -93,17 +93,26 @@ public class EscuelasService {
             List<Establecimiento> establecimientos = csvToBean.parse();
             List<EscuelaEntity> escuelaEntities = new ArrayList<>();
             for (Establecimiento establecimiento : establecimientos) {
-                EscuelaEntity escuelaEntity = new EscuelaEntity();
-                escuelaEntity.setRbd(establecimiento.getRbd());
-                escuelaEntity.setNombre(establecimiento.getNombre());
-                escuelaEntity.setComuna(establecimiento.getComuna());
-                escuelaEntity.setLongitud(establecimiento.getLongitud());
-                escuelaEntity.setLatitud(establecimiento.getLatitud());
-                escuelaEntity.setDirector(establecimiento.getDirector());
-                escuelaEntity.setActivo(true);
+                EscuelaEntity escuelaEntity = escuelaRepository.findByRbd(establecimiento.getRbd());
+                if (escuelaEntity == null) {
+                    log.warn("Ya existe escuela con RBD: {} nombre {}", establecimiento.getRbd(), establecimiento.getNombre());
+                    continue; // Skip if the school already exists
+                }
+
+                int parenStart = establecimiento.getNombre().indexOf('(');
+                int parenEnd = establecimiento.getNombre().indexOf(')');
+
+                if (parenStart < 0 || parenEnd < 0 || parenEnd <= parenStart) {
+                    throw new IllegalArgumentException("Paréntesis mal formados");
+                }
+
+                String nombre = establecimiento.getNombre().substring(0, parenStart).trim();
+                String direccion = establecimiento.getNombre().substring(parenStart + 1, parenEnd).trim();
+
+                escuelaEntity.setNombre("Jardin Infantil " + nombre);
+                escuelaEntity.setDireccion(Objects.requireNonNull(direccion));
 
                 escuelaEntities.add(escuelaEntity);
-
             }
 
             if(!escuelaEntities.isEmpty()) {

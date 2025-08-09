@@ -67,4 +67,9 @@ public class OrdenServicioController {
     public void deleteDetalle(@PathVariable Long detalleId) {
         ordenServicioService.deleteDetalle(detalleId);
     }
+
+    @PostMapping("/cargar")
+    public void cargarJardines(@RequestParam("file") MultipartFile file) throws Exception {
+        ordenServicioService.cargarOs(file);
+    }
 }

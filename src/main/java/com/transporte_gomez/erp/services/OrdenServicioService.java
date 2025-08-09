@@ -3,17 +3,18 @@ package com.transporte_gomez.erp.services;
 import com.lowagie.text.Font;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 import com.transporte_gomez.erp.adapter.OrdenServicioAdapter;
-import com.transporte_gomez.erp.dto.OrdenServicio;
-import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
-import com.transporte_gomez.erp.dto.OrdenServicioFiltro;
-import com.transporte_gomez.erp.dto.Usuario;
-import com.transporte_gomez.erp.entity.OrdenServicioDetalleEntity;
-import com.transporte_gomez.erp.entity.OrdenServicioEntity;
+import com.transporte_gomez.erp.dto.*;
+import com.transporte_gomez.erp.entity.*;
 import com.transporte_gomez.erp.enums.AuditoriaOperacion;
 import com.transporte_gomez.erp.enums.Modulo;
 import com.transporte_gomez.erp.exception.OrdenServicioException;
+import com.transporte_gomez.erp.repository.EntregaRepository;
 import com.transporte_gomez.erp.repository.OrdenServicioRepository;
+import com.transporte_gomez.erp.repository.RutaRepository;
+import com.transporte_gomez.erp.repository.UsuarioRepository;
 import com.transporte_gomez.erp.specification.OrdenServicioSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +33,17 @@ import com.lowagie.text.pdf.PdfWriter;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.List;
-
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,6 +51,7 @@ import java.util.List;
 public class OrdenServicioService {
 
     private final DocumentoService documentoService;
+    private final UsuarioRepository usuarioRepository;
     @Value("${ruta.ordenes}")
     private String rutaOrdenes;
 
@@ -50,6 +60,8 @@ public class OrdenServicioService {
     private final OrdenServicioAdapter ordenServicioAdapter;
     private final AuditoriaService auditoriaService;
     private final ImagenService imagenService;
+    private final RutaRepository rutaRepository;
+    private final EntregaRepository entregaRepository;
 
     public Page<OrdenServicio> getOrdenServicios(Pageable pageable, OrdenServicioFiltro filtro){
         return ordenServicioRepository.findAll(OrdenServicioSpecification.conFiltros(filtro), pageable)
@@ -316,4 +328,50 @@ public class OrdenServicioService {
             }
         }
     }
+
+    public void cargarOs(MultipartFile file) throws Exception {
+        try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+            CsvToBean<Os> csvToBean = new CsvToBeanBuilder<Os>(reader)
+                    .withType(Os.class)
+                    .withSeparator(',')
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            List<Os> ordenes = csvToBean.parse();
+
+            Map<String, Map<String, List<Long>>> agrupado = ordenes.stream()
+                    .collect(Collectors.groupingBy(
+                            Os::getFecha,
+                            Collectors.groupingBy(
+                                    Os::getVehiculo,
+                                    Collectors.mapping(Os::getOs, Collectors.toList())
+                            )
+                    ));
+
+            agrupado.forEach((fecha, vehiculos) -> {
+                vehiculos.forEach((vehiculo, listaOs) -> {
+                    System.out.println("Vehículo: " + vehiculo + " → OS: " + listaOs);
+
+                    // Cambiado el patrón para parsear la fecha en formato d/M/yyyy
+                    LocalDate localDate = LocalDate.parse(fecha, DateTimeFormatter.ofPattern("d/M/yyyy"));
+                    Instant fechaInstant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+                    AtomicInteger ordenIndex = new AtomicInteger(0);
+                    listaOs.forEach((os) -> {
+                        if (os != null) {
+                            Optional<OrdenServicioEntity> ordenServicioEntityOptional = ordenServicioRepository.findById(os);
+                            if (ordenServicioEntityOptional.isPresent()) {
+                                OrdenServicioEntity ordenServicioEntity = ordenServicioEntityOptional.get();
+                                ordenServicioEntity.setEntregado(true);
+                                ordenServicioEntity.setFechaEntrega(fechaInstant);
+                                ordenServicioRepository.save(ordenServicioEntity);
+                            }
+                        }
+                    });
+                });
+            });
+        }
+    }
+
+
 }
