@@ -2,7 +2,7 @@ package com.transporte_gomez.erp.controller;
 
 import com.transporte_gomez.erp.dto.Entrega;
 import com.transporte_gomez.erp.dto.EntregaFiltro;
-import com.transporte_gomez.erp.dto.ReporteMes;
+import com.transporte_gomez.erp.dto.Reporte;
 import com.transporte_gomez.erp.services.EntregaServices;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @AllArgsConstructor
@@ -32,8 +31,13 @@ public class EntregaController {
     }
 
     @GetMapping("/reporte/mes")
-    public List<ReporteMes> obtenerEntregasPorMes(EntregaFiltro filtro) {
+    public List<Reporte> obtenerEntregasPorMes(EntregaFiltro filtro) {
         return entregaServices.obtenerEntregasEntregadasPorMes(filtro);
+    }
+
+    @GetMapping("/reporte/top-escuelas")
+    public List<Reporte> findTop10EscuelasConMasEntregas(EntregaFiltro filtro) {
+        return entregaServices.findTopEscuelasConMasEntregas(filtro);
     }
 
     @PutMapping(value = "/{id}/recepcionado", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

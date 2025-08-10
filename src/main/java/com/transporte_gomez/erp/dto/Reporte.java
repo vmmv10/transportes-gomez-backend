@@ -3,13 +3,13 @@ package com.transporte_gomez.erp.dto;
 import lombok.Data;
 
 @Data
-public class ReporteMes {
+public class Reporte {
 
-    private String mes;
+    private String titulo;
     private Long total;
 
-    public ReporteMes(String mes, Long total) {
-        this.mes = mes;
+    public Reporte(String titulo, Long total) {
+        this.titulo = titulo;
         this.total = total;
     }
 }

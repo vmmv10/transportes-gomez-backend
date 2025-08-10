@@ -31,6 +31,7 @@ public class EntregaAdapter {
         entrega.setEntregado(entregaEntity.getEntregado());
         entrega.setRuta(entregaEntity.getRuta().getId());
         entrega.setOrden(entregaEntity.getOrden());
+        entrega.setFecha(entregaEntity.getRuta().getFecha());
         return entrega;
     }
 

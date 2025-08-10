@@ -4,7 +4,7 @@ import com.transporte_gomez.erp.adapter.EntregaAdapter;
 import com.transporte_gomez.erp.dto.Entrega;
 import com.transporte_gomez.erp.dto.EntregaFiltro;
 import com.transporte_gomez.erp.dto.OrdenServicio;
-import com.transporte_gomez.erp.dto.ReporteMes;
+import com.transporte_gomez.erp.dto.Reporte;
 import com.transporte_gomez.erp.entity.EntregaEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.entity.RutaEntity;
@@ -94,13 +94,24 @@ public class EntregaServices {
         ordenServicioRepository.save(ordenServicioEntity);
     }
 
-    public List<ReporteMes> obtenerEntregasEntregadasPorMes(EntregaFiltro filtro) {
+    public List<Reporte> obtenerEntregasEntregadasPorMes(EntregaFiltro filtro) {
         List<Object[]> resultados = entregaRepository.contarEntregasEntregadasPorMes(filtro.getEscuela());
 
         return resultados.stream()
-                .map(obj -> new ReporteMes(
+                .map(obj -> new Reporte(
                         (String) obj[0],
-                        ((Number) obj[1]).longValue()
+                        ((Long) obj[1])
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<Reporte> findTopEscuelasConMasEntregas(EntregaFiltro filtro) {
+        List<Object[]> resultados = entregaRepository.findTopEscuelasConMasEntregas(filtro.getSize());
+
+        return resultados.stream()
+                .map(obj -> new Reporte(
+                        (String) obj[0],
+                        ((Long) obj[1])
                 ))
                 .collect(Collectors.toList());
     }

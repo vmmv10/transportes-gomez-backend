@@ -40,4 +40,57 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     ORDER BY mes
 """, nativeQuery = true)
     List<Object[]> contarEntregasEntregadasPorMes(@Param("escuela") Long escuela);
+
+    @Query(value = """
+    SELECT TO_CHAR(e.creado_en, 'YYYY-MM-DD') AS dia, COUNT(*) AS total
+    FROM qa.entregas e
+    INNER JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    WHERE e.entregado = true
+      AND (:escuela IS NULL OR os.escuela_id = :escuela)
+    GROUP BY TO_CHAR(e.creado_en, 'YYYY-MM-DD')
+    ORDER BY dia
+""", nativeQuery = true)
+    List<Object[]> contarEntregasEntregadasPorDia(@Param("escuela") Long escuela);
+
+
+    @Query(value = """
+    SELECT TO_CHAR(DATE_TRUNC('week', e.creado_en), 'IYYY-IW') AS semana, COUNT(*) AS total
+    FROM qa.entregas e
+    INNER JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    WHERE e.entregado = true
+      AND (:escuela IS NULL OR os.escuela_id = :escuela)
+    GROUP BY DATE_TRUNC('week', e.creado_en)
+    ORDER BY semana
+""", nativeQuery = true)
+    List<Object[]> contarEntregasEntregadasPorSemana(@Param("escuela") Long escuela);
+
+    @Query(value = """
+    SELECT\s
+        TO_CHAR(e.creado_en, 'YYYY-MM-DD') AS dia,\s
+        COUNT(*) AS total
+    FROM qa.entregas e
+    INNER JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    WHERE e.entregado = true
+      AND (:escuela IS NULL OR os.escuela_id = :escuela)
+      AND e.creado_en >= CURRENT_DATE - INTERVAL '4 days'  -- últimos 5 días incluyendo hoy
+    GROUP BY TO_CHAR(e.creado_en, 'YYYY-MM-DD')
+    ORDER BY dia
+    
+""", nativeQuery = true)
+    List<Object[]> contarEntregasEntregadasUltimosCincoDias(@Param("escuela") Long escuela);
+
+    @Query(value = """
+        SELECT 
+            es.nombre AS nombreEscuela, 
+            COUNT(*) AS totalEntregas
+        FROM qa.entregas e
+        INNER JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+        INNER JOIN qa.escuelas es ON es.id = os.escuela_id
+        WHERE e.entregado = true
+        GROUP BY es.nombre
+        ORDER BY totalEntregas DESC
+        LIMIT :limit
+    """, nativeQuery = true)
+    List<Object[]> findTopEscuelasConMasEntregas(@Param("limit") int limit);
+
 }
