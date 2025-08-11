@@ -18,9 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -95,7 +93,7 @@ public class EntregaServices {
     }
 
     public List<Reporte> obtenerEntregasEntregadasPorMes(EntregaFiltro filtro) {
-        List<Object[]> resultados = entregaRepository.contarEntregasEntregadasPorMes(filtro.getEscuela());
+        List<Object[]> resultados = entregaRepository.contarEntregasPorMesIncluyendoCeros(filtro.getEscuela());
 
         return resultados.stream()
                 .map(obj -> new Reporte(
@@ -106,7 +104,7 @@ public class EntregaServices {
     }
 
     public List<Reporte> findTopEscuelasConMasEntregas(EntregaFiltro filtro) {
-        List<Object[]> resultados = entregaRepository.findTopEscuelasConMasEntregas(filtro.getSize());
+        List<Object[]> resultados = entregaRepository.findTopEscuelasConMasEntregas(filtro.getEscuela(), filtro.getSize());
 
         return resultados.stream()
                 .map(obj -> new Reporte(
@@ -125,6 +123,7 @@ public class EntregaServices {
         }
 
         entregaEntity.setEntregado(true);
+        entregaEntity.setFecha(OffsetDateTime.now());
         entregaRepository.save(entregaEntity);
 
         OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
@@ -157,4 +156,51 @@ public class EntregaServices {
             rutaRepository.save(rutaEntity);
         }
     }
+
+    public List<Reporte> obtenerEntregasEntregadasVsNoEntregadas(EntregaFiltro filtro) {
+        List<Object[]> resultados = entregaRepository.contarEntregasEntregadasVsNoEntregadas(filtro.getEscuela());
+
+        return resultados.stream()
+                .map(obj -> new Reporte(
+                        (String) obj[0],      // estado: "Entregadas" o "No entregadas"
+                        ((Long) obj[1])       // total
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<Reporte> obtenerUltimasEntregas(EntregaFiltro filtro) {
+        List<Object[]> resultados = entregaRepository.ultimasEntregas(filtro.getEscuela(), filtro.getSize());
+
+        return resultados.stream()
+                .map(obj -> new Reporte(
+                        obj[1] + " - " + obj[2] + " (" + obj[3] + ")", // fecha - escuela (estado)
+                        ((Integer) obj[0]).longValue() // id entrega
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+    public List<Reporte> obtenerEscuelasConPendientes(EntregaFiltro filtro) {
+        List<Object[]> resultados = entregaRepository.escuelasConPendientes(filtro.getEscuela());
+
+        return resultados.stream()
+                .map(obj -> new Reporte(
+                        (String) obj[0],
+                        ((Long) obj[1])
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public Double obtenerPromedioDiario(EntregaFiltro filtro) {
+        return entregaRepository.promedioEntregasDiarias(filtro.getEscuela());
+    }
+
+    public Long countEntregasParaHoyPorEscuela(EntregaFiltro filtro) {
+        LocalDate hoy = LocalDate.now();
+        LocalDate inicioDia = LocalDate.from(hoy.atStartOfDay());
+        LocalDate finDia = LocalDate.from(hoy.atTime(LocalTime.MAX));
+        return entregaRepository.countEntregasPorEscuelaEntreFechas(filtro.getEscuela(), inicioDia, finDia);
+    }
+
+
 }

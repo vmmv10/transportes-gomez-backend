@@ -2,6 +2,7 @@ package com.transporte_gomez.erp.controller;
 
 import com.transporte_gomez.erp.dto.OrdenServicio;
 import com.transporte_gomez.erp.dto.OrdenServicioFiltro;
+import com.transporte_gomez.erp.dto.Reporte;
 import com.transporte_gomez.erp.dto.Usuario;
 import com.transporte_gomez.erp.services.OrdenServicioService;
 import com.transporte_gomez.erp.services.UsuarioService;
@@ -71,5 +72,10 @@ public class OrdenServicioController {
     @PostMapping("/cargar")
     public void cargarJardines(@RequestParam("file") MultipartFile file) throws Exception {
         ordenServicioService.cargarOs(file);
+    }
+
+    @GetMapping("/reporte/items-mas-despachados")
+    public List<Reporte> getItemsMasDespachados(OrdenServicioFiltro filtro) {
+        return ordenServicioService.obtenerItemsMasDespachados(filtro);
     }
 }

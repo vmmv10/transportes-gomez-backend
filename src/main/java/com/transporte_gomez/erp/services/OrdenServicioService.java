@@ -11,10 +11,7 @@ import com.transporte_gomez.erp.entity.*;
 import com.transporte_gomez.erp.enums.AuditoriaOperacion;
 import com.transporte_gomez.erp.enums.Modulo;
 import com.transporte_gomez.erp.exception.OrdenServicioException;
-import com.transporte_gomez.erp.repository.EntregaRepository;
-import com.transporte_gomez.erp.repository.OrdenServicioRepository;
-import com.transporte_gomez.erp.repository.RutaRepository;
-import com.transporte_gomez.erp.repository.UsuarioRepository;
+import com.transporte_gomez.erp.repository.*;
 import com.transporte_gomez.erp.specification.OrdenServicioSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +32,7 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -52,6 +50,7 @@ public class OrdenServicioService {
 
     private final DocumentoService documentoService;
     private final UsuarioRepository usuarioRepository;
+    private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
     @Value("${ruta.ordenes}")
     private String rutaOrdenes;
 
@@ -373,5 +372,19 @@ public class OrdenServicioService {
         }
     }
 
+    public List<Reporte> obtenerItemsMasDespachados(OrdenServicioFiltro filtro) {
+        List<Object[]> items = ordenServicioDetalleRepository.findItemsMasDespachadosPorEscuela(filtro.getEscuelaId());
+        List<Reporte> reportes = new ArrayList<>();
+        for (Object[] item : items) {
+            if (item.length == 2) {
+                String nombreItem = (String) item[0];
 
+                BigDecimal cantidadDecimal = (BigDecimal) item[1];
+                Long cantidad = cantidadDecimal.longValue();
+
+                reportes.add(new Reporte(nombreItem, cantidad));
+            }
+        }
+        return reportes;
+    }
 }

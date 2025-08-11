@@ -44,4 +44,30 @@ public class EntregaController {
     public void entregar(@PathVariable Integer id, @RequestPart(value = "files", required = false) List<MultipartFile> files){
         entregaServices.entregar(id, files);
     }
+
+    @GetMapping("/reporte/entregas-vs-no-entregadas")
+    public List<Reporte> obtenerEntregasEntregadasVsNoEntregadas(EntregaFiltro filtro) {
+        return entregaServices.obtenerEntregasEntregadasVsNoEntregadas(filtro);
+    }
+
+    @GetMapping("/reporte/ultimas-entregas")
+    public List<Reporte> obtenerUltimasEntregas(EntregaFiltro filtro) {
+        return entregaServices.obtenerUltimasEntregas(filtro);
+    }
+
+    @GetMapping("/reporte/promedio-diario")
+    public Double obtenerPromedioDiario(EntregaFiltro filtro) {
+        return entregaServices.obtenerPromedioDiario(filtro);
+    }
+
+    @GetMapping("/reporte/entregas-por-dia/count")
+    public Long countEntregasParaHoyPorEscuela(EntregaFiltro filtro) {
+        return entregaServices.countEntregasParaHoyPorEscuela(filtro);
+    }
+
+    @GetMapping("/reporte/escuelas-con-pendientes")
+    public List<Reporte> obtenerEscuelasConPendientes(EntregaFiltro filtro) {
+        return entregaServices.obtenerEscuelasConPendientes(filtro);
+    }
+
 }

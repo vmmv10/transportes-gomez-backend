@@ -8,6 +8,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -38,5 +39,8 @@ public class EntregaEntity {
 
     @Column(name = "orden", nullable = false)
     private Integer orden;
+
+    @Column(name = "fecha")
+    private OffsetDateTime fecha;
 
 }
