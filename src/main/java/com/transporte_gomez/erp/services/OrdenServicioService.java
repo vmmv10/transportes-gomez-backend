@@ -59,8 +59,6 @@ public class OrdenServicioService {
     private final OrdenServicioAdapter ordenServicioAdapter;
     private final AuditoriaService auditoriaService;
     private final ImagenService imagenService;
-    private final RutaRepository rutaRepository;
-    private final EntregaRepository entregaRepository;
 
     public Page<OrdenServicio> getOrdenServicios(Pageable pageable, OrdenServicioFiltro filtro){
         return ordenServicioRepository.findAll(OrdenServicioSpecification.conFiltros(filtro), pageable)
@@ -89,16 +87,23 @@ public class OrdenServicioService {
         OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Orden de servicio no encontrada con ID: " + id));
 
-        OrdenServicioEntity updatedEntity = ordenServicioRepository.save(ordenServicioAdapter.updateOrdenServicio(ordenServicioEntity, ordenServicio));
-        if (ordenServicio.getDetalles() != null && !ordenServicio.getDetalles().isEmpty()) {
-            ordenServicioDetalleService.update(ordenServicio.getDetalles(), updatedEntity);
+        if (ordenServicioEntity.getEntregado()) {
+            if (files != null && !files.isEmpty()) {
+                asignarImagen(files, ordenServicioEntity);
+            }
+            auditoriaService.registrarAuditoria(AuditoriaOperacion.ACTUALIZADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), ordenServicioEntity.getId(), usuario.getId());
+            return ordenServicioAdapter.getOrdenServicio(ordenServicioEntity, true);
+        } else {
+            OrdenServicioEntity updatedEntity = ordenServicioRepository.save(ordenServicioAdapter.updateOrdenServicio(ordenServicioEntity, ordenServicio));
+            if (ordenServicio.getDetalles() != null && !ordenServicio.getDetalles().isEmpty()) {
+                ordenServicioDetalleService.update(ordenServicio.getDetalles(), updatedEntity);
+            }
+            if (files != null && !files.isEmpty()) {
+                asignarImagen(files, updatedEntity);
+            }
+            auditoriaService.registrarAuditoria(AuditoriaOperacion.ACTUALIZADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), updatedEntity.getId(), usuario.getId());
+            return ordenServicioAdapter.getOrdenServicio(updatedEntity, true);
         }
-        if (files != null && !files.isEmpty()) {
-            asignarImagen(files, updatedEntity);
-        }
-        auditoriaService.registrarAuditoria(AuditoriaOperacion.ACTUALIZADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), updatedEntity.getId(), usuario.getId());
-
-        return ordenServicioAdapter.getOrdenServicio(updatedEntity, true);
     }
 
     @Transactional
