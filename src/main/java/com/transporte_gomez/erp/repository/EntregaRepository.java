@@ -34,7 +34,7 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
 
     @Query(value = """
     WITH rango AS (
-        SELECT 
+        SELECT\s
             DATE_TRUNC('month', MIN(creado_en)) AS inicio,
             DATE_TRUNC('month', MAX(creado_en)) AS fin
         FROM qa.entregas
@@ -46,7 +46,7 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
             interval '1 month'
         ) AS mes_inicio
     )
-    SELECT 
+    SELECT\s
         CASE EXTRACT(MONTH FROM m.mes_inicio)
             WHEN 1 THEN 'Enero'
             WHEN 2 THEN 'Febrero'
@@ -62,16 +62,17 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
             WHEN 12 THEN 'Diciembre'
         END
         || ' ' || EXTRACT(YEAR FROM m.mes_inicio) AS mes,
-        COALESCE(COUNT(e.id), 0) AS total
+        COUNT(e.id) AS total
     FROM meses m
     LEFT JOIN qa.entregas e
         ON DATE_TRUNC('month', e.creado_en) = m.mes_inicio
     LEFT JOIN qa.ordenes_servicios os
         ON os.id = e.orden_servicio_id
-       AND e.entregado = true
-       AND (:escuela IS NULL OR os.escuela_id = :escuela)
+    WHERE e.entregado = true
+      AND (:escuela IS NULL OR os.escuela_id = :escuela)
     GROUP BY m.mes_inicio
-    ORDER BY m.mes_inicio
+    HAVING COUNT(e.id) > 0
+    ORDER BY m.mes_inicio;
 """, nativeQuery = true)
     List<Object[]> contarEntregasPorMesIncluyendoCeros(@Param("escuela") Long escuela);
 
@@ -114,7 +115,7 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     @Query(value = """
     SELECT 
         es.nombre AS nombreEscuela, 
-        COUNT(*) AS totalEntregas
+        COUNT(DISTINCT DATE(e.fecha)) AS totalEntregas
     FROM qa.entregas e
     INNER JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
     INNER JOIN qa.escuelas es ON es.id = os.escuela_id
@@ -124,7 +125,10 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     ORDER BY totalEntregas DESC
     LIMIT :limit
 """, nativeQuery = true)
-    List<Object[]> findTopEscuelasConMasEntregas(@Param("escuela") Long escuela, @Param("limit") int limit);
+    List<Object[]> findTopEscuelasConMasEntregas(
+            @Param("escuela") Long escuela,
+            @Param("limit") int limit
+    );
 
     @Query(value = """
     SELECT 
@@ -198,4 +202,20 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
 
     @Query("select e from EntregaEntity e where e.ordenServicio.id = ?1")
     Optional<EntregaEntity> findByOrdenServicio_Id(Long id);
+
+    @Query(value = """
+    SELECT 
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE e.entregado = true) AS realizadas,
+        COUNT(*) FILTER (WHERE e.entregado = false) AS pendientes,
+        COUNT(*) FILTER (
+            WHERE DATE(e.fecha AT TIME ZONE 'America/Santiago') = CURRENT_DATE
+        ) AS hoy
+    FROM qa.entregas e
+    JOIN qa.ordenes_servicios os
+        ON os.id = e.orden_servicio_id
+    WHERE (:escuela IS NULL OR os.escuela_id = :escuela)
+    """, nativeQuery = true)
+    List<Object[]> getEntregaStatsNative(@Param("escuela") Long escuela);
+
 }

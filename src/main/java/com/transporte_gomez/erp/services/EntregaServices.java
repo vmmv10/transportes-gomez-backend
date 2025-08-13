@@ -1,10 +1,7 @@
 package com.transporte_gomez.erp.services;
 
 import com.transporte_gomez.erp.adapter.EntregaAdapter;
-import com.transporte_gomez.erp.dto.Entrega;
-import com.transporte_gomez.erp.dto.EntregaFiltro;
-import com.transporte_gomez.erp.dto.OrdenServicio;
-import com.transporte_gomez.erp.dto.Reporte;
+import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.entity.EntregaEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.entity.RutaEntity;
@@ -19,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -202,5 +200,15 @@ public class EntregaServices {
         return entregaRepository.countEntregasPorEscuelaEntreFechas(filtro.getEscuela(), inicioDia, finDia);
     }
 
+    public EntregaDashboard getStats(EntregaFiltro filtro) {
+        List<Object[]> result = entregaRepository.getEntregaStatsNative(filtro.getEscuela());
+        EntregaDashboard entregaDashboard = new EntregaDashboard();
+        System.out.println("EntregaDashboard resultado: " + Arrays.toString(result.get(0)));
+        entregaDashboard.setEntregasHoy((Long) result.get(0)[3]);
+        entregaDashboard.setEntregasRealizadas((Long) result.get(0)[1]);
+        entregaDashboard.setEntregasPendientes((Long) result.get(0)[2]);
+        entregaDashboard.setEntregasTotal((Long) result.get(0)[0]);
 
+        return entregaDashboard;
+    }
 }

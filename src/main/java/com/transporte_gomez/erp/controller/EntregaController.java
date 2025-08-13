@@ -1,6 +1,7 @@
 package com.transporte_gomez.erp.controller;
 
 import com.transporte_gomez.erp.dto.Entrega;
+import com.transporte_gomez.erp.dto.EntregaDashboard;
 import com.transporte_gomez.erp.dto.EntregaFiltro;
 import com.transporte_gomez.erp.dto.Reporte;
 import com.transporte_gomez.erp.services.EntregaServices;
@@ -68,6 +69,11 @@ public class EntregaController {
     @GetMapping("/reporte/escuelas-con-pendientes")
     public List<Reporte> obtenerEscuelasConPendientes(EntregaFiltro filtro) {
         return entregaServices.obtenerEscuelasConPendientes(filtro);
+    }
+
+    @GetMapping("/reporte/stats")
+    public EntregaDashboard getStats(EntregaFiltro filtro) {
+        return entregaServices.getStats(filtro);
     }
 
 }
