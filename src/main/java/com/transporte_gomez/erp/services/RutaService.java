@@ -8,6 +8,7 @@ import com.transporte_gomez.erp.entity.RutaEntity;
 import com.transporte_gomez.erp.repository.RutaRepository;
 import com.transporte_gomez.erp.specification.RutaSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RutaService {
 
     private final RutaRepository rutaRepository;
@@ -69,6 +70,7 @@ public class RutaService {
 
     public Ruta obtenerRutaUsuarioAndFechaHoy(Usuario usuario) {
         LocalDate hoyChile = LocalDate.now(ZoneId.of("America/Santiago"));
+        log.info("usuario {} ", usuario);
         List<RutaEntity> rutaEntityOptional = rutaRepository.findByChofer_IdAndFechaAndEstado(usuario.getId(), hoyChile, "PENDIENTE");
         if (rutaEntityOptional.isEmpty()) {
             return null;

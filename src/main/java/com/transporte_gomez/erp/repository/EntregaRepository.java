@@ -196,4 +196,6 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
                                             @Param("fechaInicio") LocalDate fechaInicio,
                                             @Param("fechaFin") LocalDate fechaFin);
 
+    @Query("select e from EntregaEntity e where e.ordenServicio.id = ?1")
+    Optional<EntregaEntity> findByOrdenServicio_Id(Long id);
 }

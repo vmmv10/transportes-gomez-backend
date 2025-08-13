@@ -78,4 +78,10 @@ public class OrdenServicioController {
     public List<Reporte> getItemsMasDespachados(OrdenServicioFiltro filtro) {
         return ordenServicioService.obtenerItemsMasDespachados(filtro);
     }
+
+    @PostMapping(value = "/{id}/imagenes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void imagenes(@PathVariable Long id,
+                                  @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+         ordenServicioService.uploadImagenes(id, files);
+    }
 }

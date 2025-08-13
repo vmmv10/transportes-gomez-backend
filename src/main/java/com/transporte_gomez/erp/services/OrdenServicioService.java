@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -51,6 +52,8 @@ public class OrdenServicioService {
     private final DocumentoService documentoService;
     private final UsuarioRepository usuarioRepository;
     private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
+    private final RutaRepository rutaRepository;
+    private final EntregaRepository entregaRepository;
     @Value("${ruta.ordenes}")
     private String rutaOrdenes;
 
@@ -333,6 +336,7 @@ public class OrdenServicioService {
         }
     }
 
+    @Transactional
     public void cargarOs(MultipartFile file) throws Exception {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             CsvToBean<Os> csvToBean = new CsvToBeanBuilder<Os>(reader)
@@ -359,7 +363,7 @@ public class OrdenServicioService {
                     // Cambiado el patrón para parsear la fecha en formato d/M/yyyy
                     LocalDate localDate = LocalDate.parse(fecha, DateTimeFormatter.ofPattern("d/M/yyyy"));
                     Instant fechaInstant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-
+                    OffsetDateTime fechaOffset = localDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime();
                     AtomicInteger ordenIndex = new AtomicInteger(0);
                     listaOs.forEach((os) -> {
                         if (os != null) {
@@ -392,4 +396,14 @@ public class OrdenServicioService {
         }
         return reportes;
     }
+
+    public void uploadImagenes(Long id, List<MultipartFile> files) {
+        OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Orden de servicio no encontrada con ID: " + id));
+
+        if (files != null && !files.isEmpty()) {
+            asignarImagen(files, ordenServicioEntity);
+        }
+    }
+
 }
