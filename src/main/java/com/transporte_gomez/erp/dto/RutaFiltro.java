@@ -8,6 +8,7 @@ public class RutaFiltro {
     private Integer id;
     private String fechaDesde;
     private String fechaHasta;
+    private String fecha;
     private Long chofer;
     private String estado;
 }
