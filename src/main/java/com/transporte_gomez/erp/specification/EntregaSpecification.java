@@ -1,10 +1,7 @@
 package com.transporte_gomez.erp.specification;
 
 import com.transporte_gomez.erp.dto.EntregaFiltro;
-import com.transporte_gomez.erp.dto.EscuelaFilter;
 import com.transporte_gomez.erp.entity.EntregaEntity;
-import com.transporte_gomez.erp.entity.EscuelaEntity;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 public class EntregaSpecification {
 
@@ -30,6 +27,10 @@ public class EntregaSpecification {
 
             if (filtro.getEscuela() != null) {
                 predicates = cb.and(predicates, cb.equal(root.get("ordenServicio").get("escuela").get("id"), filtro.getEscuela()));
+            }
+
+            if (filtro.getChofer() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("ruta").get("chofer").get("id"), filtro.getChofer()));
             }
 
             return predicates;

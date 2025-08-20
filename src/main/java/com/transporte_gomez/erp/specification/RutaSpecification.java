@@ -29,6 +29,10 @@ public class RutaSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("fecha"), filtro.getFecha()));
             }
 
+            if (filtro.getConductor() != null &&  filtro.getConductor()) {
+                predicates = cb.and(predicates, cb.equal(root.get("chofer").get("id"), filtro.getChofer()));
+            }
+
             return predicates;
         };
     }

@@ -13,4 +13,6 @@ public class EntregaFiltro {
     private Integer id;
     private Long escuela;
     private Integer size;
+    private Boolean conductor;
+    private Long chofer;
 }

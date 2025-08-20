@@ -6,6 +6,7 @@ import com.transporte_gomez.erp.dto.Usuario;
 import com.transporte_gomez.erp.services.RutaService;
 import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
+@Slf4j
 @RequestMapping("/api/rutas")
 public class RutaController {
 
@@ -21,7 +23,12 @@ public class RutaController {
     private final RutaService rutaService;
 
     @GetMapping()
-    public Page<Ruta> findAll(RutaFiltro filtro, Pageable pageable) {
+    public Page<Ruta> findAll(RutaFiltro filtro, Pageable pageable, @AuthenticationPrincipal Jwt jwt) {
+        Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
+        log.info("Usuario logeado: {}", usuario);
+        if (usuario.getRol() != null && usuario.getRol().equalsIgnoreCase("repartidor")) {
+            filtro.setChofer(usuario.getId());
+        }
         return rutaService.findAll(pageable, filtro);
     }
 

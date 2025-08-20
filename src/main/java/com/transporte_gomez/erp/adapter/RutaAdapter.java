@@ -48,15 +48,16 @@ public class RutaAdapter {
             ruta.setEntregas(entregas.stream()
                     .map(entregaAdapter::getEntrega)
                     .toList());
-        }
-        List<OrdenServicio> ordenes = new ArrayList<>();
-        for (Entrega entrega : ruta.getEntregas()) {
-            if (entrega.getOrdenServicio() != null) {
-                ordenes.add(entrega.getOrdenServicio());
-            }
-        }
 
-        ruta.setOrdenes(ordenes);
+            List<OrdenServicio> ordenes = new ArrayList<>();
+            for (Entrega entrega : ruta.getEntregas()) {
+                if (entrega.getOrdenServicio() != null) {
+                    ordenes.add(entrega.getOrdenServicio());
+                }
+            }
+
+            ruta.setOrdenes(ordenes);
+        }
 
         return ruta;
     }

@@ -11,4 +11,5 @@ public class RutaFiltro {
     private String fecha;
     private Long chofer;
     private String estado;
+    private Boolean conductor;
 }

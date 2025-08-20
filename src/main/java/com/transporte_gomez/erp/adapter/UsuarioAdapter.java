@@ -20,6 +20,7 @@ public class UsuarioAdapter {
         usuario.setEmail(usuarioEntity.getEmail());
         usuario.setApellidos(usuarioEntity.getApellidos());
         usuario.setModoOscuro(usuarioEntity.getTemaOscuro());
+        usuario.setRol(usuarioEntity.getRol());
 
         return usuario;
     }

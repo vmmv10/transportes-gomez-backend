@@ -16,10 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -98,7 +96,7 @@ public class EntregaServices {
                         (String) obj[0],
                         ((Long) obj[1])
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<Reporte> findTopEscuelasConMasEntregas(EntregaFiltro filtro) {
@@ -109,14 +107,14 @@ public class EntregaServices {
                         (String) obj[0],
                         ((Long) obj[1])
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void entregar(Integer id, List<MultipartFile> files) {
         EntregaEntity entregaEntity = entregaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entrega not found with id: " + id));
 
-        if (entregaEntity.getEntregado()) {
+        if (Boolean.TRUE.equals(entregaEntity.getEntregado())) {
             throw new RuntimeException("Entrega ya ha sido entregada con id: " + id);
         }
 
@@ -137,12 +135,24 @@ public class EntregaServices {
         ordenServicioRepository.save(ordenServicioEntity);
 
         List<EntregaEntity> entregas = entregaRepository.findByRuta_Id(entregaEntity.getRuta().getId());
-        Boolean sinEntregas = true;
+        boolean sinEntregas = true;
+        boolean primeraEntrega = true;
         for (EntregaEntity entrega : entregas) {
-            if (!entrega.getEntregado()) {
+            if (Boolean.FALSE.equals(entrega.getEntregado())) {
                 sinEntregas = false;
                 break;
+            } else {
+                primeraEntrega = false;
             }
+        }
+
+        if (primeraEntrega) {
+            RutaEntity rutaEntity = rutaRepository.getReferenceById(entregaEntity.getRuta().getId());
+            rutaEntity.setInicio(Instant.now());
+            rutaEntity.setEnTransito(true);
+            rutaEntity.setEstado("PENDIENTE");
+
+            rutaRepository.save(rutaEntity);
         }
 
         if (sinEntregas) {
@@ -163,7 +173,7 @@ public class EntregaServices {
                         (String) obj[0],      // estado: "Entregadas" o "No entregadas"
                         ((Long) obj[1])       // total
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<Reporte> obtenerUltimasEntregas(EntregaFiltro filtro) {
@@ -174,7 +184,7 @@ public class EntregaServices {
                         obj[1] + " - " + obj[2] + " (" + obj[3] + ")", // fecha - escuela (estado)
                         ((Integer) obj[0]).longValue() // id entrega
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
 
@@ -186,7 +196,7 @@ public class EntregaServices {
                         (String) obj[0],
                         ((Long) obj[1])
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Double obtenerPromedioDiario(EntregaFiltro filtro) {
@@ -201,9 +211,8 @@ public class EntregaServices {
     }
 
     public EntregaDashboard getStats(EntregaFiltro filtro) {
-        List<Object[]> result = entregaRepository.getEntregaStatsNative(filtro.getEscuela());
+        List<Object[]> result = entregaRepository.getEntregaStatsNative(filtro.getEscuela(), filtro.getFecha());
         EntregaDashboard entregaDashboard = new EntregaDashboard();
-        System.out.println("EntregaDashboard resultado: " + Arrays.toString(result.get(0)));
         entregaDashboard.setEntregasHoy((Long) result.get(0)[3]);
         entregaDashboard.setEntregasRealizadas((Long) result.get(0)[1]);
         entregaDashboard.setEntregasPendientes((Long) result.get(0)[2]);

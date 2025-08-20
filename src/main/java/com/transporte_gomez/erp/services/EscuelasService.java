@@ -9,6 +9,7 @@ import com.transporte_gomez.erp.dto.Establecimiento;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
 import com.transporte_gomez.erp.repository.EscuelaRepository;
 import com.transporte_gomez.erp.specification.EscuelaSpecification;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -118,6 +119,22 @@ public class EscuelasService {
             if(!escuelaEntities.isEmpty()) {
                 escuelaRepository.saveAll(escuelaEntities);
             }
+        }
+    }
+    //@PostConstruct
+    public void normalizarNombres() {
+        List<EscuelaEntity> escuelaEntities = escuelaRepository.findAll();
+
+        for (EscuelaEntity escuelaEntity : escuelaEntities) {
+            String nombreActual = escuelaEntity.getNombre();
+            escuelaEntity.setNombre(nombreActual.toUpperCase());
+
+            if (escuelaEntity.getDirector() != null) {
+                String directorActual = escuelaEntity.getDirector();
+                escuelaEntity.setDirector(directorActual.toUpperCase());
+            }
+
+            escuelaRepository.save(escuelaEntity);
         }
     }
 }

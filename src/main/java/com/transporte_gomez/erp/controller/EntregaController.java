@@ -1,14 +1,14 @@
 package com.transporte_gomez.erp.controller;
 
-import com.transporte_gomez.erp.dto.Entrega;
-import com.transporte_gomez.erp.dto.EntregaDashboard;
-import com.transporte_gomez.erp.dto.EntregaFiltro;
-import com.transporte_gomez.erp.dto.Reporte;
+import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.services.EntregaServices;
+import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,9 +20,14 @@ import java.util.List;
 public class EntregaController {
 
     private final EntregaServices entregaServices;
+    private final UsuarioService usuarioService;
 
     @GetMapping
-    public Page<Entrega> findAll(Pageable pageable, EntregaFiltro filtro) {
+    public Page<Entrega> findAll(Pageable pageable, EntregaFiltro filtro, @AuthenticationPrincipal Jwt jwt) {
+        Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
+        if (usuario.getRol() != null && usuario.getRol().equalsIgnoreCase("repartidor")) {
+            filtro.setChofer(usuario.getId());
+        }
         return entregaServices.getEntregas(pageable, filtro);
     }
 
