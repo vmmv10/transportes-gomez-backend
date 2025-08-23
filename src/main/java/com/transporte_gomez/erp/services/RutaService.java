@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -94,6 +95,24 @@ public class RutaService {
         rutaEntity.setEnTransito(false);
         rutaEntity.setEstado("FINALIZADA");
 
+        rutaRepository.save(rutaEntity);
+    }
+
+    @Transactional
+    public void finalizarRutaCompleta(Integer id) {
+        RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+        rutaEntity.setFin(Instant.now());
+        rutaEntity.setEnTransito(false);
+        rutaEntity.setEstado("FINALIZADA");
+
+        rutaRepository.save(rutaEntity);
+
+        entregaServices.completarRuta(id);
+    }
+
+    public void actualizarKilometros(Integer id, Integer kilometros) {
+        RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+        rutaEntity.setKilometros(kilometros);
         rutaRepository.save(rutaEntity);
     }
 

@@ -203,23 +203,32 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     @Query("select e from EntregaEntity e where e.ordenServicio.id = ?1")
     Optional<EntregaEntity> findByOrdenServicio_Id(Long id);
 
+    @Query(value ="""
+   SELECT
+          COUNT(*) AS total,
+          COUNT(*) FILTER (WHERE e.entregado = true) AS realizadas,
+          COUNT(*) FILTER (WHERE e.entregado = false) AS pendientes
+      FROM qa.entregas e
+      JOIN qa.ordenes_servicios os
+          ON os.id = e.orden_servicio_id
+      WHERE (:escuelaId IS NULL OR os.escuela_id = :escuelaId)
+        AND (:fecha IS NULL OR DATE(e.fecha) = :fecha)
+   
+""", nativeQuery = true)
+    List<Object[]> getEntregaStats(@Param("escuelaId") Long escuela,
+                             @Param("fecha") LocalDate fecha);
+
     @Query(value = """
-    SELECT 
-        COUNT(*) AS total,
-        COUNT(*) FILTER (WHERE e.entregado = true) AS realizadas,
-        COUNT(*) FILTER (WHERE e.entregado = false) AS pendientes,
-        COUNT(*) FILTER (
-            WHERE DATE(e.fecha AT TIME ZONE 'America/Santiago') = CURRENT_DATE
-        ) AS hoy
+    SELECT COUNT(*)
     FROM qa.entregas e
-    JOIN qa.ordenes_servicios os
-        ON os.id = e.orden_servicio_id
-    WHERE (:escuela IS NULL OR os.escuela_id = :escuela)
-      AND (:fecha IS NULL OR DATE(e.fecha AT TIME ZONE 'America/Santiago') = :fecha)
-    """, nativeQuery = true)
-    List<Object[]> getEntregaStatsNative(
-            @Param("escuela") Long escuela,
-            @Param("fecha") LocalDate fecha
-    );
+    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    JOIN qa.rutas r ON r.id = e.ruta_id
+    WHERE e.entregado = false
+      AND  (:escuela IS NULL OR os.escuela_id = :escuela)
+    AND DATE(r.fecha AT TIME ZONE 'America/Santiago') = CURRENT_DATE
+""", nativeQuery = true)
+    Long getEntregasHoy(@Param("escuela") Long escuela);
+
+
 
 }

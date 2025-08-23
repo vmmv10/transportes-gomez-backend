@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.*;
@@ -211,13 +212,31 @@ public class EntregaServices {
     }
 
     public EntregaDashboard getStats(EntregaFiltro filtro) {
-        List<Object[]> result = entregaRepository.getEntregaStatsNative(filtro.getEscuela(), filtro.getFecha());
+        List<Object[]> result = entregaRepository.getEntregaStats(filtro.getEscuela(), filtro.getFecha());
+        Long result2 = entregaRepository.getEntregasHoy(filtro.getEscuela());
         EntregaDashboard entregaDashboard = new EntregaDashboard();
-        entregaDashboard.setEntregasHoy((Long) result.get(0)[3]);
         entregaDashboard.setEntregasRealizadas((Long) result.get(0)[1]);
         entregaDashboard.setEntregasPendientes((Long) result.get(0)[2]);
         entregaDashboard.setEntregasTotal((Long) result.get(0)[0]);
+        entregaDashboard.setEntregasHoy(result2);
 
         return entregaDashboard;
+    }
+
+    @Transactional
+    public void completarRuta(Integer id) {
+        List<EntregaEntity> entregas = entregaRepository.findByRuta_Id(id);
+        for (EntregaEntity entrega : entregas) {
+            if (!entrega.getEntregado()) {
+                entrega.setEntregado(true);
+                entrega.setFecha(OffsetDateTime.now());
+                entregaRepository.save(entrega);
+
+                OrdenServicioEntity ordenServicioEntity = entrega.getOrdenServicio();
+                ordenServicioEntity.setEnRuta(false);
+                ordenServicioEntity.setEntregado(true);
+                ordenServicioRepository.save(ordenServicioEntity);
+            }
+        }
     }
 }

@@ -47,4 +47,7 @@ public class RutaEntity {
     @Column(name = "fin")
     private Instant fin;
 
+    @Column(name = "kilometros")
+    private Integer kilometros;
+
 }

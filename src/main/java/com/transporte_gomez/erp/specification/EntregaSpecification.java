@@ -18,7 +18,7 @@ public class EntregaSpecification {
             }
 
             if (filtro.getFecha() != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("fecha"), filtro.getFecha()));
+                predicates = cb.and(predicates, cb.equal(root.get("ruta").get("fecha"), filtro.getFecha()));
             }
 
             if (filtro.getOrdenServicio() != null) {

@@ -37,6 +37,7 @@ public class RutaAdapter {
         ruta.setFecha(fechaChile.toLocalDate());
         ruta.setEstado(rutaEntity.getEstado());
         ruta.setEnTransito(rutaEntity.getEnTransito());
+        ruta.setKilometros(rutaEntity.getKilometros());
 
         if (rutaEntity.getChofer() != null) {
             ruta.setChofer(usuarioAdapter.getUsuario(rutaEntity.getChofer()));

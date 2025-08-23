@@ -21,5 +21,6 @@ public class Ruta {
     private Integer orden;
     private Boolean enTransito;
     private Instant inicio;
-    private Integer fin;
+    private Instant fin;
+    private Integer kilometros;
 }

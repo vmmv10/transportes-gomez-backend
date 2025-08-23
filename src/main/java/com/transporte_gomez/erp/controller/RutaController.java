@@ -1,5 +1,6 @@
 package com.transporte_gomez.erp.controller;
 
+import com.transporte_gomez.erp.dto.Entrega;
 import com.transporte_gomez.erp.dto.Ruta;
 import com.transporte_gomez.erp.dto.RutaFiltro;
 import com.transporte_gomez.erp.dto.Usuario;
@@ -66,5 +67,15 @@ public class RutaController {
     @PutMapping("/{id}/comenzar")
     public Ruta comenzar(@PathVariable Integer id) {
         return rutaService.comenzarRuta(id);
+    }
+
+    @PutMapping("/{id}/kilometros")
+    public void updateKilometros(@PathVariable Integer id, @RequestBody Ruta ruta) {
+        rutaService.actualizarKilometros(id, ruta.getKilometros());
+    }
+
+    @PutMapping("/{id}/finalizar")
+    public void finalizarRuta(@PathVariable Integer id) {
+        rutaService.finalizarRuta(id);
     }
 }
