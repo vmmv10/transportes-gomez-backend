@@ -36,7 +36,6 @@ public class AutoRegistroUsuarioFilter extends OncePerRequestFilter {
 
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
             Jwt jwt = jwtAuth.getToken();
-            log.info("jwt token: " + jwt.getTokenValue());
             String sub = jwt.getSubject();
             if (usuarioRepository.findByAuth0Id(sub).isEmpty()) {
                 UsuarioEntity nuevo = new UsuarioEntity();

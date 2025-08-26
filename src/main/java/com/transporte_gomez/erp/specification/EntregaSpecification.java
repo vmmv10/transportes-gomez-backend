@@ -18,6 +18,7 @@ public class EntregaSpecification {
             }
 
             if (filtro.getFecha() != null) {
+                System.out.println(filtro.getFecha());
                 predicates = cb.and(predicates, cb.equal(root.get("ruta").get("fecha"), filtro.getFecha()));
             }
 

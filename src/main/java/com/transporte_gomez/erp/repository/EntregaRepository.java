@@ -211,9 +211,10 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
       FROM qa.entregas e
       JOIN qa.ordenes_servicios os
           ON os.id = e.orden_servicio_id
+      JOIN qa.rutas r
+          ON r.id = e.ruta_id
       WHERE (:escuelaId IS NULL OR os.escuela_id = :escuelaId)
-        AND (:fecha IS NULL OR DATE(e.fecha) = :fecha)
-   
+       AND (DATE(r.fecha) = COALESCE(CAST(:fecha AS date), DATE(r.fecha)))
 """, nativeQuery = true)
     List<Object[]> getEntregaStats(@Param("escuelaId") Long escuela,
                              @Param("fecha") LocalDate fecha);
