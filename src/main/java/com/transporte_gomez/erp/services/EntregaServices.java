@@ -10,6 +10,7 @@ import com.transporte_gomez.erp.repository.OrdenServicioRepository;
 import com.transporte_gomez.erp.repository.RutaRepository;
 import com.transporte_gomez.erp.specification.EntregaSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class EntregaServices {
 
     private final OrdenServicioRepository ordenServicioRepository;
