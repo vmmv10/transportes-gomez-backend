@@ -406,4 +406,21 @@ public class OrdenServicioService {
         }
     }
 
+    public Page<OrdenServicioDetalle> getItems(Long escuela, Long item, String nombre, Boolean entregado, Pageable pageable) {
+        return ordenServicioRepository.buscarOrdenesServicioConDetalles(
+                escuela,
+                item,
+                nombre,
+                entregado,
+                pageable
+        ).map(record -> {
+            OrdenServicioDetalle detalle = new OrdenServicioDetalle();
+            detalle.setItem((Long) record[2]);
+            detalle.setNombre((String) record[3]);
+            detalle.setCantidad(BigDecimal.valueOf(((Number) record[4]).longValue()));
+            detalle.setEscuela((String) record[1]);
+            return detalle;
+        });
+    }
+
 }
