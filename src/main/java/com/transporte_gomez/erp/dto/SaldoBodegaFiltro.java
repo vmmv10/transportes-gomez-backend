@@ -13,4 +13,5 @@ public class SaldoBodegaFiltro {
     private Integer categoria;
     private BigDecimal saldoBodega;
     private String codigo;
+    private Boolean activo = true;
 }

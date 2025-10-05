@@ -1,9 +1,6 @@
 package com.transporte_gomez.erp.controller;
 
-import com.transporte_gomez.erp.dto.OrdenServicio;
-import com.transporte_gomez.erp.dto.OrdenServicioFiltro;
-import com.transporte_gomez.erp.dto.Reporte;
-import com.transporte_gomez.erp.dto.Usuario;
+import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.services.OrdenServicioService;
 import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -83,5 +80,10 @@ public class OrdenServicioController {
     public void imagenes(@PathVariable Long id,
                                   @RequestPart(value = "files", required = false) List<MultipartFile> files) {
          ordenServicioService.uploadImagenes(id, files);
+    }
+
+    @GetMapping("/items")
+    public Page<OrdenServicioDetalle> getItems(Long item, Long escuela, String nombre, Boolean entregado, Pageable pageable) {
+        return ordenServicioService.getItems(escuela, item, nombre, entregado, pageable);
     }
 }

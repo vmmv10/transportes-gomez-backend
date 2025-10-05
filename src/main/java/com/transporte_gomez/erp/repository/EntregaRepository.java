@@ -229,7 +229,4 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     AND DATE(r.fecha AT TIME ZONE 'America/Santiago') = CURRENT_DATE
 """, nativeQuery = true)
     Long getEntregasHoy(@Param("escuela") Long escuela);
-
-
-
 }
