@@ -10,18 +10,25 @@ import com.transporte_gomez.erp.repository.OrdenServicioRepository;
 import com.transporte_gomez.erp.repository.RutaRepository;
 import com.transporte_gomez.erp.specification.EntregaSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class EntregaServices {
 
     private final OrdenServicioRepository ordenServicioRepository;
@@ -239,4 +246,92 @@ public class EntregaServices {
             }
         }
     }
+
+    public ByteArrayInputStream exportarEntregasExcel(EntregaFiltro filtro) {
+
+        List<EntregaEntity> entregas = entregaRepository.findAll(
+                EntregaSpecification.conFiltros(filtro)
+        );
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = workbook.createSheet("Entregas");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font font = workbook.createFont();
+            font.setBold(true);
+            headerStyle.setFont(font);
+
+            Row header = sheet.createRow(0);
+            String[] columnas = {
+                    "ID Entrega", "Ruta", "ID Orden", "Escuela", "Entregado",
+                    "Fecha Entrega", "Orden"
+            };
+
+            for (int i = 0; i < columnas.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(columnas[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // Datos
+            int rowIdx = 1;
+            for (EntregaEntity e : entregas) {
+                Row row = sheet.createRow(rowIdx++);
+
+                row.createCell(0).setCellValue(e.getId());
+                row.createCell(1).setCellValue(e.getRuta().getId());
+                row.createCell(2).setCellValue(e.getOrdenServicio().getId());
+                row.createCell(3).setCellValue(e.getOrdenServicio().getEscuela().getNombre());
+                row.createCell(4).setCellValue(e.getEntregado());
+                row.createCell(5).setCellValue(
+                        e.getFecha() != null ? e.getFecha().toString() : ""
+                );
+                row.createCell(6).setCellValue(e.getOrden());
+            }
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Error al generar Excel", ex);
+        }
+    }
+
+    public EntregaKpi obtenerKpi(EntregaKpiFiltro filtro) {
+
+        Object[] r = switch (filtro.getTipo()) {
+
+            case "rango" -> entregaRepository.kpiPorRango(
+                    filtro.getFechaInicio(),
+                    filtro.getFechaFin(),
+                    filtro.getEscuelaId()
+            );
+
+            case "mensual" -> entregaRepository.kpiMensual(
+                    filtro.getFechaReferencia(),
+                    filtro.getEscuelaId()
+            );
+
+            case "trimestral" -> entregaRepository.kpiTrimestral(
+                    filtro.getFechaReferencia(),
+                    filtro.getEscuelaId()
+            );
+
+            case "semestral" -> entregaRepository.kpiSemestral(
+                    filtro.getYear(),
+                    filtro.getFechaReferencia().equalsIgnoreCase("S1") ? 1 : 2,
+                    filtro.getEscuelaId()
+            );
+
+            default -> throw new IllegalArgumentException("Tipo de KPI inválido: " + filtro.getTipo());
+        };
+
+        return new EntregaKpi(
+                r[0] != null ? ((Number) r[0]).longValue() : 0,
+                r[1] != null ? ((Number) r[1]).longValue() : 0,
+                r[2] != null ? ((Number) r[2]).doubleValue() : 0.0
+        );
+    }
+
 }
