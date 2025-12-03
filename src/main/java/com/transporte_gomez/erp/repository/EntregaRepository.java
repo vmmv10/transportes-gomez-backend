@@ -24,6 +24,8 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
 
     Page<EntregaEntity> findAll(Specification<EntregaEntity> spec, Pageable pageable);
 
+    List<EntregaEntity> findAll(Specification<EntregaEntity> spec);
+
     @Transactional
     @Modifying
     @Query("delete from EntregaEntity e where e.ruta.id = ?1 and e.ordenServicio.id = ?2")
@@ -229,4 +231,92 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     AND DATE(r.fecha AT TIME ZONE 'America/Santiago') = CURRENT_DATE
 """, nativeQuery = true)
     Long getEntregasHoy(@Param("escuela") Long escuela);
+
+    @Query(value = """
+    SELECT 
+        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
+        COUNT(*) AS entregasPlanificadas,
+        ROUND(
+            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
+             NULLIF(COUNT(*), 0)) * 100,
+             2
+        ) AS kpi
+    FROM qa.entregas e
+    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    JOIN qa.escuelas es ON es.id = os.escuela_id
+    WHERE e.fecha::date BETWEEN :inicio AND :fin
+      AND (:escuelaId IS NULL OR es.id = :escuelaId)
+""", nativeQuery = true)
+    Object[] kpiPorRango(
+            @Param("inicio") String inicio,
+            @Param("fin") String fin,
+            @Param("escuelaId") Long escuelaId
+    );
+
+    @Query(value = """
+    SELECT 
+        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
+        COUNT(*) AS entregasPlanificadas,
+        ROUND(
+            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
+             NULLIF(COUNT(*), 0)) * 100,
+             2
+        ) AS kpi
+    FROM qa.entregas e
+    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    JOIN qa.escuelas es ON es.id = os.escuela_id
+    WHERE DATE_TRUNC('month', e.fecha) = DATE_TRUNC('month', CAST(:fecha AS DATE))
+      AND (:escuelaId IS NULL OR es.id = :escuelaId)
+""", nativeQuery = true)
+    Object[] kpiMensual(
+            @Param("fecha") String fecha,
+            @Param("escuelaId") Long escuelaId
+    );
+
+    @Query(value = """
+    SELECT 
+        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
+        COUNT(*) AS entregasPlanificadas,
+        ROUND(
+            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
+             NULLIF(COUNT(*), 0)) * 100,
+             2
+        ) AS kpi
+    FROM qa.entregas e
+    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    JOIN qa.escuelas es ON es.id = os.escuela_id
+    WHERE DATE_TRUNC('quarter', e.fecha) = DATE_TRUNC('quarter', CAST(:fecha AS DATE))
+      AND (:escuelaId IS NULL OR es.id = :escuelaId)
+""", nativeQuery = true)
+    Object[] kpiTrimestral(
+            @Param("fecha") String fecha,
+            @Param("escuelaId") Long escuelaId
+    );
+
+    @Query(value = """
+    SELECT 
+        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
+        COUNT(*) AS entregasPlanificadas,
+        ROUND(
+            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
+             NULLIF(COUNT(*), 0)) * 100,
+             2
+        ) AS kpi
+    FROM qa.entregas e
+    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+    JOIN qa.escuelas es ON es.id = os.escuela_id
+    WHERE EXTRACT(year FROM e.fecha) = :year
+      AND (
+            (EXTRACT(month FROM e.fecha) BETWEEN 1 AND 6 AND :semestre = 1)
+            OR
+            (EXTRACT(month FROM e.fecha) BETWEEN 7 AND 12 AND :semestre = 2)
+      )
+      AND (:escuelaId IS NULL OR es.id = :escuelaId)
+""", nativeQuery = true)
+    Object[] kpiSemestral(
+            @Param("year") Integer year,
+            @Param("semestre") Integer semestre,
+            @Param("escuelaId") Long escuelaId
+    );
+
 }
