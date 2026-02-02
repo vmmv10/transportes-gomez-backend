@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -44,5 +46,8 @@ public class IngresosEntity {
 
     @Column(name = "\"user\"")
     private Long user;
+
+    @Column(name = "fecha_cierre")
+    private LocalDateTime fechaCierre;
 
 }

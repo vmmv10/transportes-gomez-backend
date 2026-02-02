@@ -2,10 +2,7 @@ package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.OrdenServicio;
 import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
-import com.transporte_gomez.erp.entity.BodegaEntity;
-import com.transporte_gomez.erp.entity.DocumentoEntity;
-import com.transporte_gomez.erp.entity.OrdenServicioDetalleEntity;
-import com.transporte_gomez.erp.entity.OrdenServicioEntity;
+import com.transporte_gomez.erp.entity.*;
 import com.transporte_gomez.erp.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +23,13 @@ public class OrdenServicioAdapter {
     private final ProveedorAdpater proveedorAdpater;
     private final DocumentoAdapter documentoAdapter;
     private final EscuelaAdapter escuelaAdapter;
+    private final CategoriaAdapter categoriaAdapter;
     private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
     private final EscuelaRepository escuelaRepository;
     private final DocumentoRepository documentoRepository;
     private final DocumentoTipoRepository documentoTipoRepository;
     private final BodegaRepository bodegaRepository;
+    private final CategoriaRepository categoriaRepository;
     private final BodegaAdapter bodegaAdapter;
 
     public OrdenServicio getOrdenServicio(OrdenServicioEntity ordenServicioEntity, boolean conDetalles) {
@@ -54,6 +53,7 @@ public class OrdenServicioAdapter {
         ordenServicio.setEscuela(escuelaAdapter.toDto(ordenServicioEntity.getEscuela()));
         ordenServicio.setEntregado(ordenServicioEntity.getEntregado());
         ordenServicio.setObservaciones(ordenServicioEntity.getObservaciones());
+        ordenServicio.setIngreso(ordenServicioEntity.getIngreso());
 
         if (conDetalles && ordenServicioEntity.getDetalles() != null) {
             List<OrdenServicioDetalle> detalles = new ArrayList<>();
@@ -66,6 +66,14 @@ public class OrdenServicioAdapter {
             ordenServicio.setDetalles(detalles);
         }
 
+        if (ordenServicioEntity.getDocumentoReferencia() != null) {
+            ordenServicio.setDocumentoReferencia(ordenServicioEntity.getDocumentoReferencia());
+        }
+
+        if (ordenServicioEntity.getCategoria() != null) {
+            ordenServicio.setCategoria(categoriaAdapter.get(ordenServicioEntity.getCategoria()));
+        }
+
         return ordenServicio;
     }
 
@@ -75,6 +83,11 @@ public class OrdenServicioAdapter {
         ordenServicioEntity.setEntregado(false);
         ordenServicioEntity.setObservaciones(ordenServicio.getObservaciones());
         ordenServicioEntity.setEnRuta(false);
+        ordenServicioEntity.setIngreso(ordenServicio.getIngreso());
+
+        if (ordenServicio.getDocumentoReferencia() != null) {
+            ordenServicioEntity.setDocumentoReferencia(ordenServicio.getDocumentoReferencia());
+        }
 
         if (ordenServicio.getBodega() != null) {
             BodegaEntity bodegaEntity = bodegaRepository.findById(ordenServicio.getBodega().getId())
@@ -100,6 +113,11 @@ public class OrdenServicioAdapter {
                     .orElseThrow(() -> new IllegalArgumentException("Escuela no encontrada con ID: " + ordenServicio.getEscuela().getId())));
         }
 
+        if (ordenServicio.getCategoria() != null) {
+            ordenServicioEntity.setCategoria(categoriaRepository.findById(ordenServicio.getCategoria().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + ordenServicio.getCategoria().getId())));
+        }
+
         return ordenServicioEntity;
     }
 
@@ -111,13 +129,44 @@ public class OrdenServicioAdapter {
                     .orElseThrow(() -> new IllegalArgumentException("Escuela no encontrada con ID: " + ordenServicio.getEscuela().getId())));
         }
 
+        if (ordenServicio.getDocumentoReferencia() != null) {
+            ordenServicioEntity.setDocumentoReferencia(ordenServicio.getDocumentoReferencia());
+        }
+
         if (ordenServicio.getDocumento() != null) {
             ordenServicioEntity.setDocumento(documentoRepository.findByNumeroAndTipo_Codigo(ordenServicio.getDocumento().getNumero(), ordenServicio.getDocumento().getTipo().getCodigo()));
         }
 
+        if (ordenServicio.getCategoria() != null) {
+            ordenServicioEntity.setCategoria(categoriaRepository.findById(ordenServicio.getCategoria().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + ordenServicio.getCategoria().getId())));
+        }
+
+        ordenServicio.setIngreso(ordenServicioEntity.getIngreso());
+
         return ordenServicioEntity;
     }
 
+    public OrdenServicio getByIngreso(IngresosEntity ingreso) {
+        OrdenServicio ordenServicio = new OrdenServicio();
 
+        ordenServicio.setIngreso(ingreso.getId());
+
+        ordenServicio.setBodega(bodegaAdapter.getBodega(bodegaRepository.findById(1L).orElseThrow()));
+
+        List<OrdenServicioDetalle> detalles = new ArrayList<>();
+
+        for (IngresosDetalleEntity detalleEntity : ingreso.getDetalles()) {
+            OrdenServicioDetalle detalle = new OrdenServicioDetalle();
+            detalle.setCantidad(detalleEntity.getCantidad());
+            detalle.setNombre(detalleEntity.getItem().getNombre());
+            detalle.setItem(detalleEntity.getItem().getId());
+            detalles.add(detalle);
+        }
+
+        ordenServicio.setDetalles(detalles);
+
+        return ordenServicio;
+    }
 
 }

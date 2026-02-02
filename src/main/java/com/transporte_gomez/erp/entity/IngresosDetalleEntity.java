@@ -30,4 +30,7 @@ public class IngresosDetalleEntity {
     @JoinColumn(name = "item")
     private ItemEntity item;
 
+    @Column(name = "saldo")
+    private BigDecimal saldo;
+
 }

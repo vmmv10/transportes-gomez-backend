@@ -56,4 +56,17 @@ public class OrdenServicioEntity {
     @Column(name = "bodega")
     private Long bodega;
 
+    @Column(name = "documento_referencia", length = Integer.MAX_VALUE)
+    private String documentoReferencia;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria")
+    private CategoriaEntity categoria;
+
+    @OneToOne(mappedBy = "ordenServicio", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private EntregaEntity entrega;
+
+    @Column(name = "ingreso")
+    private Integer ingreso;
+
 }

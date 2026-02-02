@@ -87,6 +87,8 @@ public class ImagenService {
         imagen.setRuta(rutaRelativa);
         imagen.setRutaThumbnail(rutaThumbRelativa);
 
+        log.info("✅ Guardando metadata de la imagen en la base de datos");
+
         imagenRepository.save(imagen);
     }
 

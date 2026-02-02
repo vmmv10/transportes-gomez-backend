@@ -62,6 +62,8 @@ public class OrdenServicioService {
     private final OrdenServicioAdapter ordenServicioAdapter;
     private final AuditoriaService auditoriaService;
     private final ImagenService imagenService;
+    private final IngresosRepository ingresosRepository;
+    private final IngresoService ingresoService;
 
     public Page<OrdenServicio> getOrdenServicios(Pageable pageable, OrdenServicioFiltro filtro){
         return ordenServicioRepository.findAll(OrdenServicioSpecification.conFiltros(filtro), pageable)
@@ -82,6 +84,9 @@ public class OrdenServicioService {
         auditoriaService.registrarAuditoria(AuditoriaOperacion.CREADO.getNombre(), Modulo.ORDEN_SERVICIO.getCodigo(), ordenServicioEntitySave.getId(), usuario.getId());
         if (ordenServicioEntitySave.getBodega() != null && ordenServicioEntitySave.getBodega() == 4L) {
             documentoService.asignarDocumento(ordenServicioEntitySave.getDocumento().getId(), true);
+        }
+        if (ordenServicio.getIngreso() != null) {
+            ingresoService.RestarSaldo(ordenServicioEntitySave);
         }
         return ordenServicioAdapter.getOrdenServicio(ordenServicioEntitySave, true);
     }
@@ -116,6 +121,11 @@ public class OrdenServicioService {
         for (OrdenServicioDetalleEntity detalle : ordenServicio.getDetalles()) {
             ordenServicioDetalleService.delete(detalle.getId());
         }
+
+        if (ordenServicio.getIngreso() != null) {
+            ingresoService.sumarSaldo(ordenServicio);
+        }
+
         ordenServicioRepository.deleteById(id);
     }
 
@@ -382,7 +392,8 @@ public class OrdenServicioService {
     }
 
     public List<Reporte> obtenerItemsMasDespachados(OrdenServicioFiltro filtro) {
-        List<Object[]> items = ordenServicioDetalleRepository.findItemsMasDespachadosPorEscuela(filtro.getEscuelaId());
+        log.info("Obteniendo items mas despachados {}", filtro);
+        List<Object[]> items = ordenServicioDetalleRepository.findItemsMasDespachadosPorEscuela(filtro.getEscuelaId(), filtro.getDocumentoReferencia(), filtro.getCategoria());
         List<Reporte> reportes = new ArrayList<>();
         for (Object[] item : items) {
             if (item.length == 2) {
@@ -423,4 +434,19 @@ public class OrdenServicioService {
         });
     }
 
+    public OrdenServicio getByIngreso(Integer ingreso) {
+        IngresosEntity ingresosEntity = ingresosRepository.findById(ingreso)
+                .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado con ID: " + ingreso));
+        boolean tieneSaldo = false;
+        for (IngresosDetalleEntity detalle : ingresosEntity.getDetalles()) {
+            if (detalle.getSaldo().compareTo(BigDecimal.ZERO) > 0) {
+                tieneSaldo = true;
+                break;
+            }
+        }
+        if (!tieneSaldo) {
+            throw new OrdenServicioException("El ingreso no tiene saldo disponible para generar una orden de servicio.");
+        }
+        return ordenServicioAdapter.getByIngreso(ingresosEntity);
+    }
 }

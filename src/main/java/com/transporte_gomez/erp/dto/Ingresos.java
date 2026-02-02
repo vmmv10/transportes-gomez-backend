@@ -8,6 +8,7 @@ import java.util.List;
 public class Ingresos {
     private Integer id;
     private String fecha;
+    private String fechaCierre;
     private Long documento;
     private DocumentoTipo documentoTipo;
     private List<IngresosDetalle> detalles;

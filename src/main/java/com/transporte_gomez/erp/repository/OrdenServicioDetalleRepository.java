@@ -18,10 +18,13 @@ public interface OrdenServicioDetalleRepository extends JpaRepository<OrdenServi
       AND d.item IS NOT NULL
       AND i.id = d.item
       AND (:escuelaId IS NULL OR os.escuela.id = :escuelaId)
+        AND (:oc IS NULL OR os.documentoReferencia = :oc)
+        AND (CAST(:categoria AS INTEGER) IS NULL OR os.categoria.id = :categoria)
     GROUP BY i.nombre
     ORDER BY SUM(d.cantidad) DESC
 """)
-    List<Object[]> findItemsMasDespachadosPorEscuela(@Param("escuelaId") Long escuelaId);
+    List<Object[]> findItemsMasDespachadosPorEscuela(@Param("escuelaId") Long escuelaId, @Param("oc") String oc,
+                                                     @Param("categoria") Integer categoria);
 
 
 }

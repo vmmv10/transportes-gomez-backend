@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,8 +25,6 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
 
     Page<EntregaEntity> findAll(Specification<EntregaEntity> spec, Pageable pageable);
 
-    List<EntregaEntity> findAll(Specification<EntregaEntity> spec);
-
     @Transactional
     @Modifying
     @Query("delete from EntregaEntity e where e.ruta.id = ?1 and e.ordenServicio.id = ?2")
@@ -36,7 +35,7 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
 
     @Query(value = """
     WITH rango AS (
-        SELECT\s
+        SELECT
             DATE_TRUNC('month', MIN(creado_en)) AS inicio,
             DATE_TRUNC('month', MAX(creado_en)) AS fin
         FROM qa.entregas
@@ -48,7 +47,7 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
             interval '1 month'
         ) AS mes_inicio
     )
-    SELECT\s
+    SELECT
         CASE EXTRACT(MONTH FROM m.mes_inicio)
             WHEN 1 THEN 'Enero'
             WHEN 2 THEN 'Febrero'
@@ -205,7 +204,7 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
     @Query("select e from EntregaEntity e where e.ordenServicio.id = ?1")
     Optional<EntregaEntity> findByOrdenServicio_Id(Long id);
 
-    @Query(value ="""
+    @Query(value = """
    SELECT
           COUNT(*) AS total,
           COUNT(*) FILTER (WHERE e.entregado = true) AS realizadas,
@@ -215,108 +214,148 @@ public interface EntregaRepository extends JpaRepository<EntregaEntity, Integer>
           ON os.id = e.orden_servicio_id
       JOIN qa.rutas r
           ON r.id = e.ruta_id
-      WHERE (:escuelaId IS NULL OR os.escuela_id = :escuelaId)
-       AND (DATE(r.fecha) = COALESCE(CAST(:fecha AS date), DATE(r.fecha)))
+    WHERE (:escuelaId IS NULL OR os.escuela_id = :escuelaId)
+      AND (:oc IS NULL OR os.documento_referencia = :oc)
+        AND (CAST(:categoria AS INTEGER) IS NULL OR os.categoria = :categoria)
+        AND (DATE(r.fecha) = COALESCE(CAST(:fecha AS date), DATE(r.fecha)))
+        
 """, nativeQuery = true)
     List<Object[]> getEntregaStats(@Param("escuelaId") Long escuela,
-                             @Param("fecha") LocalDate fecha);
+                                   @Param("fecha") LocalDate fecha, @Param("oc") String oc, @Param("categoria") Integer categoria);
 
     @Query(value = """
-    SELECT COUNT(*)
-    FROM qa.entregas e
-    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
-    JOIN qa.rutas r ON r.id = e.ruta_id
-    WHERE e.entregado = false
-      AND  (:escuela IS NULL OR os.escuela_id = :escuela)
-    AND DATE(r.fecha AT TIME ZONE 'America/Santiago') = CURRENT_DATE
-""", nativeQuery = true)
-    Long getEntregasHoy(@Param("escuela") Long escuela);
+        SELECT COUNT(*)
+        FROM qa.entregas e
+        JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
+        JOIN qa.rutas r ON r.id = e.ruta_id
+        WHERE e.entregado = false
+          AND (:escuela IS NULL OR os.escuela_id = :escuela)
+          AND DATE(r.fecha AT TIME ZONE 'America/Santiago') = CURRENT_DATE
+        AND (:oc IS NULL OR os.documento_referencia = :oc)
+        AND (CAST(:categoria AS INTEGER) IS NULL OR os.categoria = :categoria)
+    """, nativeQuery = true)
+    Long getEntregasHoy(
+            @Param("escuela") Long escuela,
+            @Param("oc") String oc,
+            @Param("categoria") Integer categoria
+    );
 
     @Query(value = """
-    SELECT 
-        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
-        COUNT(*) AS entregasPlanificadas,
-        ROUND(
-            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
-             NULLIF(COUNT(*), 0)) * 100,
-             2
-        ) AS kpi
-    FROM qa.entregas e
-    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
-    JOIN qa.escuelas es ON es.id = os.escuela_id
-    WHERE e.fecha::date BETWEEN :inicio AND :fin
-      AND (:escuelaId IS NULL OR es.id = :escuelaId)
-""", nativeQuery = true)
-    Object[] kpiPorRango(
-            @Param("inicio") String inicio,
-            @Param("fin") String fin,
-            @Param("escuelaId") Long escuelaId
+    WITH kpi_diario AS (
+        SELECT
+            r.fecha AS dia,
+
+            COUNT(e.id) FILTER (
+                WHERE e.entregado = true
+                AND e.fecha::date = r.fecha
+            ) AS entregas_realizadas,
+
+            COUNT(e.id) FILTER (
+                WHERE e.fecha::date = r.fecha
+            ) AS entregas_planificadas,
+
+            CASE
+                WHEN COUNT(e.id) FILTER (WHERE e.fecha::date = r.fecha) = 0
+                    THEN NULL
+                ELSE ROUND(
+                    (
+                        COUNT(e.id) FILTER (
+                            WHERE e.entregado = true
+                            AND e.fecha::date = r.fecha
+                        )::numeric
+                        /
+                        COUNT(e.id) FILTER (
+                            WHERE e.fecha::date = r.fecha
+                        )::numeric
+                    ) * 100, 2
+                )
+            END AS kpi
+        FROM qa.rutas r
+        LEFT JOIN qa.entregas e
+            ON e.ruta_id = r.id
+        LEFT JOIN qa.ordenes_servicios os
+            ON os.id = e.orden_servicio_id
+        WHERE
+            (:fecha IS NULL OR r.fecha = :fecha)
+            AND (:escuelaId IS NULL OR os.escuela_id = :escuelaId)
+            AND (:categoriaId IS NULL OR os.categoria = :categoriaId)
+        GROUP BY r.fecha
+    )
+
+    SELECT AVG(kpi)
+    FROM kpi_diario
+    WHERE entregas_planificadas > 0
+    """,
+            nativeQuery = true)
+    BigDecimal getPromedioKPIEntregasATiempo(
+            @Param("escuelaId") Long escuelaId,
+            @Param("fecha") LocalDate fecha,
+            @Param("categoriaId") Integer categoriaId
+    );
+
+    @Query(value = """
+    WITH kpi_quiebre AS (
+        SELECT
+            r.fecha AS dia,
+
+            COUNT(os.id) AS pedidos_totales,
+
+            COUNT(os.id) FILTER (WHERE os.entregado = false) AS pedidos_no_completados,
+
+            CASE
+                WHEN COUNT(os.id) = 0 THEN NULL
+                ELSE ROUND(
+                    (COUNT(os.id) FILTER (WHERE os.entregado = false)::numeric /
+                    COUNT(os.id)::numeric) * 100,
+                2)
+            END AS kpi
+        FROM qa.rutas r
+        LEFT JOIN qa.entregas e
+            ON e.ruta_id = r.id
+        LEFT JOIN qa.ordenes_servicios os
+            ON os.id = e.orden_servicio_id
+        WHERE
+            (:fecha IS NULL OR r.fecha = :fecha)
+            AND (:escuelaId IS NULL OR os.escuela_id = :escuelaId)
+            AND (:categoriaId IS NULL OR os.categoria = :categoriaId)
+        GROUP BY r.fecha
+    )
+    
+    SELECT AVG(kpi)
+    FROM kpi_quiebre
+    WHERE pedidos_totales > 0
+    """,
+            nativeQuery = true)
+    BigDecimal getPromedioKPIQuiebreStock(
+            @Param("escuelaId") Long escuelaId,
+            @Param("fecha") LocalDate fecha,
+            @Param("categoriaId") Integer categoriaId
     );
 
     @Query(value = """
     SELECT 
-        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
-        COUNT(*) AS entregasPlanificadas,
-        ROUND(
-            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
-             NULLIF(COUNT(*), 0)) * 100,
-             2
-        ) AS kpi
+        AVG(EXTRACT(EPOCH FROM (e.fecha - i.fecha_cierre)) / 3600) 
+            AS promedio_horas_respuesta
     FROM qa.entregas e
-    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
-    JOIN qa.escuelas es ON es.id = os.escuela_id
-    WHERE DATE_TRUNC('month', e.fecha) = DATE_TRUNC('month', CAST(:fecha AS DATE))
-      AND (:escuelaId IS NULL OR es.id = :escuelaId)
-""", nativeQuery = true)
-    Object[] kpiMensual(
-            @Param("fecha") String fecha,
-            @Param("escuelaId") Long escuelaId
-    );
-
-    @Query(value = """
-    SELECT 
-        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
-        COUNT(*) AS entregasPlanificadas,
-        ROUND(
-            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
-             NULLIF(COUNT(*), 0)) * 100,
-             2
-        ) AS kpi
-    FROM qa.entregas e
-    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
-    JOIN qa.escuelas es ON es.id = os.escuela_id
-    WHERE DATE_TRUNC('quarter', e.fecha) = DATE_TRUNC('quarter', CAST(:fecha AS DATE))
-      AND (:escuelaId IS NULL OR es.id = :escuelaId)
-""", nativeQuery = true)
-    Object[] kpiTrimestral(
-            @Param("fecha") String fecha,
-            @Param("escuelaId") Long escuelaId
-    );
-
-    @Query(value = """
-    SELECT 
-        COUNT(*) FILTER (WHERE e.entregado = TRUE) AS entregasRealizadas,
-        COUNT(*) AS entregasPlanificadas,
-        ROUND(
-            (COUNT(*) FILTER (WHERE e.entregado = TRUE)::decimal /
-             NULLIF(COUNT(*), 0)) * 100,
-             2
-        ) AS kpi
-    FROM qa.entregas e
-    JOIN qa.ordenes_servicios os ON os.id = e.orden_servicio_id
-    JOIN qa.escuelas es ON es.id = os.escuela_id
-    WHERE EXTRACT(year FROM e.fecha) = :year
-      AND (
-            (EXTRACT(month FROM e.fecha) BETWEEN 1 AND 6 AND :semestre = 1)
-            OR
-            (EXTRACT(month FROM e.fecha) BETWEEN 7 AND 12 AND :semestre = 2)
-      )
-      AND (:escuelaId IS NULL OR es.id = :escuelaId)
-""", nativeQuery = true)
-    Object[] kpiSemestral(
-            @Param("year") Integer year,
-            @Param("semestre") Integer semestre,
-            @Param("escuelaId") Long escuelaId
+    JOIN qa.rutas r 
+        ON r.id = e.ruta_id
+    JOIN qa.ordenes_servicios os 
+        ON os.id = e.orden_servicio_id
+    JOIN qa.ingresos i 
+        ON i.id = os.ingreso
+    WHERE
+        os.ingreso IS NOT NULL
+        AND i.fecha_cierre IS NOT NULL
+        AND e.fecha IS NOT NULL
+        AND (:fecha IS NULL OR r.fecha = :fecha)
+        AND (:escuelaId IS NULL OR os.escuela_id = :escuelaId)
+        AND (:categoriaId IS NULL OR os.categoria = :categoriaId)
+    """,
+            nativeQuery = true)
+    BigDecimal getPromedioTiempoRespuestaInterno(
+            @Param("escuelaId") Long escuelaId,
+            @Param("fecha") LocalDate fecha,
+            @Param("categoriaId") Integer categoriaId
     );
 
 }

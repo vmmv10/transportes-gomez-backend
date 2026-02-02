@@ -10,4 +10,5 @@ public class IngresosDetalle {
     private Integer id;
     private BigDecimal cantidad;
     private Item item;
+    private BigDecimal saldo;
 }

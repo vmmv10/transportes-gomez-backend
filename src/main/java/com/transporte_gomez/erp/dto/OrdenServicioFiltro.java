@@ -11,4 +11,6 @@ public class OrdenServicioFiltro {
     private Long documentoId;
     private Boolean enRuta;
     private Boolean entregado;
+    private Integer categoria;
+    private String documentoReferencia;
 }

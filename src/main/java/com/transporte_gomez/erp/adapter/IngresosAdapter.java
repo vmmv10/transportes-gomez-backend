@@ -26,6 +26,7 @@ public class IngresosAdapter {
         Ingresos dto = new Ingresos();
         dto.setId(entity.getId());
         dto.setFecha(String.valueOf(entity.getFecha()));
+        dto.setFechaCierre(String.valueOf(entity.getFechaCierre()));
         dto.setDocumento(entity.getDocumento());
         dto.setDocumentoTipo(documentoTipoAdapter.getDocumentoTipo(entity.getDocumentoTipo()));
         dto.setObservaciones(entity.getObservaciones());

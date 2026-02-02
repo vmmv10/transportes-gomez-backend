@@ -6,6 +6,8 @@ import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.dto.Ingresos;
 import com.transporte_gomez.erp.entity.IngresosDetalleEntity;
 import com.transporte_gomez.erp.entity.IngresosEntity;
+import com.transporte_gomez.erp.entity.OrdenServicioDetalleEntity;
+import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.enums.IngresoEstado;
 import com.transporte_gomez.erp.enums.MovimientoInventarioTipo;
 import com.transporte_gomez.erp.enums.MovimientoInventarioTipoOperacion;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -92,7 +96,7 @@ public class IngresoService {
         ingresoEntity.setEstado(estado);
 
         if (IngresoEstado.CERRADO.getCodigo().equals(estado)) {
-            ingresoEntity.setFecha(Instant.now());
+            ingresoEntity.setFechaCierre(LocalDateTime.now());
             ingresoEntity.getDetalles().forEach(detalle -> {
                 movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getItem().getId(), ingresoEntity.getBodega().getId(), Long.valueOf(folio), detalle.getCantidad());
                 saldoBodegaService.createOrUpdate(detalle.getItem().getId(), ingresoEntity.getBodega().getId(), "ENTRADA", detalle.getCantidad());
@@ -129,5 +133,37 @@ public class IngresoService {
         IngresosEntity ingresoEntity = ingresosRepository.findById(folio)
                 .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado con folio: " + folio));
         ingresosRepository.delete(ingresoEntity);
+    }
+
+    public void RestarSaldo(OrdenServicioEntity ordenServicioEntity) {
+        IngresosEntity ingresoEntity = ingresosRepository.findById(ordenServicioEntity.getIngreso())
+                .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado con folio: " + ordenServicioEntity.getIngreso()));
+
+        for (IngresosDetalleEntity detalle : ingresoEntity.getDetalles()) {
+            for (OrdenServicioDetalleEntity detalleOs : ordenServicioEntity.getDetalles()) {
+                if (detalle.getItem().getId().equals(detalleOs.getItem())) {
+                    BigDecimal nuevaCantidad = detalle.getSaldo().subtract(detalleOs.getCantidad());
+                    detalle.setSaldo(nuevaCantidad.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : nuevaCantidad);
+                }
+            }
+        }
+
+        ingresosRepository.save(ingresoEntity);
+    }
+
+    public void sumarSaldo(OrdenServicioEntity ordenServicioEntity) {
+        IngresosEntity ingresoEntity = ingresosRepository.findById(ordenServicioEntity.getIngreso())
+                .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado con folio: " + ordenServicioEntity.getIngreso()));
+
+        for (IngresosDetalleEntity detalle : ingresoEntity.getDetalles()) {
+            for (OrdenServicioDetalleEntity detalleOs : ordenServicioEntity.getDetalles()) {
+                if (detalle.getItem().getId().equals(detalleOs.getItem())) {
+                    BigDecimal nuevaCantidad = detalle.getSaldo().add(detalleOs.getCantidad());
+                    detalle.setSaldo(nuevaCantidad.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : nuevaCantidad);
+                }
+            }
+        }
+
+        ingresosRepository.save(ingresoEntity);
     }
 }

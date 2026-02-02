@@ -34,6 +34,14 @@ public class EntregaSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("ruta").get("chofer").get("id"), filtro.getChofer()));
             }
 
+            if (filtro.getCategoria() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("ordenServicio").get("categoria").get("id"), filtro.getCategoria()));
+            }
+
+            if (filtro.getOc() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("ordenServicio").get("documentoReferencia"),  filtro.getOc()));
+            }
+
             return predicates;
         };
     }

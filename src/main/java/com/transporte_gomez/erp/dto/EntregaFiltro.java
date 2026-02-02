@@ -19,4 +19,7 @@ public class EntregaFiltro {
     private Integer size;
     private Boolean conductor;
     private Long chofer;
+
+    private String oc;
+    private Integer categoria;
 }

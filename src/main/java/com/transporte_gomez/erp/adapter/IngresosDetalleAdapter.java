@@ -22,6 +22,7 @@ public class IngresosDetalleAdapter {
         detalle.setId(entity.getId());
         detalle.setCantidad(entity.getCantidad());
         detalle.setItem(itemAdapter.getItem(entity.getItem()));
+        detalle.setSaldo(entity.getSaldo());
 
         return detalle;
     }

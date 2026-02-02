@@ -4,18 +4,14 @@ import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.services.EntregaServices;
 import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
 @AllArgsConstructor
@@ -85,23 +81,9 @@ public class EntregaController {
         return entregaServices.getStats(filtro);
     }
 
-    @PostMapping("/excel")
-    public ResponseEntity<InputStreamResource> exportarExcel(EntregaFiltro filtro) {
-
-        ByteArrayInputStream in = entregaServices.exportarEntregasExcel(filtro);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=entregas.xlsx");
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
-                .body(new InputStreamResource(in));
-    }
-
-    @GetMapping("/kpi")
-    public EntregaKpi obtenerKpi(EntregaKpiFiltro filtro) {
-        return entregaServices.obtenerKpi(filtro);
+    @GetMapping("/reporte/kpis")
+    public List<Kpi> getKpis(EntregaFiltro filtro) {
+        return entregaServices.getKpis(filtro);
     }
 
 }

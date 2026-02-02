@@ -16,4 +16,7 @@ public class OrdenServicio {
     private List<OrdenServicioDetalle> detalles;
     private boolean entregado;
     private Bodega bodega;
+    private String documentoReferencia;
+    private Categoria categoria;
+    private Integer ingreso;
 }

@@ -37,6 +37,11 @@ public class EscuelaAdapter {
         escuelaEntity.setLongitud(escuela.getLongitud());
         escuelaEntity.setRbd(escuela.getRbd());
         escuelaEntity.setComuna(escuela.getComuna());
+        escuelaEntity.setActivo(true);
+        escuelaEntity.setDirector(escuela.getDirector());
+        escuelaEntity.setDireccion(escuela.getDireccion());
+        escuelaEntity.setEmail(escuela.getEmail());
+        escuelaEntity.setTelefono(escuela.getTelefono());
         return escuelaEntity;
     }
 

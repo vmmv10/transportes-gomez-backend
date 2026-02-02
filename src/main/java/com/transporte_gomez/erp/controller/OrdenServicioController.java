@@ -86,4 +86,9 @@ public class OrdenServicioController {
     public Page<OrdenServicioDetalle> getItems(Long item, Long escuela, String nombre, Boolean entregado, Pageable pageable) {
         return ordenServicioService.getItems(escuela, item, nombre, entregado, pageable);
     }
+
+    @GetMapping("/ingreso/{ingreso}")
+    public OrdenServicio getIngreso(@PathVariable Integer ingreso) {
+        return ordenServicioService.getByIngreso(ingreso);
+    }
 }

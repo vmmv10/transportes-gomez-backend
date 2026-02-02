@@ -17,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -113,7 +116,9 @@ public class EntregaServices {
                 .toList();
     }
 
+    @Transactional
     public void entregar(Integer id, List<MultipartFile> files) {
+        log.info("Entregando entrega con id: {}", id);
         EntregaEntity entregaEntity = entregaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entrega not found with id: " + id));
 
@@ -124,7 +129,7 @@ public class EntregaServices {
         entregaEntity.setEntregado(true);
         entregaEntity.setFecha(OffsetDateTime.now());
         entregaRepository.save(entregaEntity);
-
+        log.info("Entrega con id: {}", id);
         OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
         ordenServicioEntity.setEnRuta(false);
         ZoneId zoneId = ZoneId.of("America/Santiago");
@@ -133,6 +138,7 @@ public class EntregaServices {
         ordenServicioEntity.setFechaEntrega(fechaChile);
         ordenServicioEntity.setEntregado(true);
         if (files != null && !files.isEmpty()) {
+            log.info("Entregando imagen con id: {}", id);
             ordenServicioService.asignarImagen(files, ordenServicioEntity);
         }
         ordenServicioRepository.save(ordenServicioEntity);
@@ -214,8 +220,9 @@ public class EntregaServices {
     }
 
     public EntregaDashboard getStats(EntregaFiltro filtro) {
-        List<Object[]> result = entregaRepository.getEntregaStats(filtro.getEscuela(), filtro.getFecha());
-        Long result2 = entregaRepository.getEntregasHoy(filtro.getEscuela());
+        System.out.println("FILTRO: " + filtro);
+        List<Object[]> result = entregaRepository.getEntregaStats(filtro.getEscuela(), filtro.getFecha(), filtro.getOc(), filtro.getCategoria());
+        Long result2 = entregaRepository.getEntregasHoy(filtro.getEscuela(), filtro.getOc(), filtro.getCategoria());
         EntregaDashboard entregaDashboard = new EntregaDashboard();
         entregaDashboard.setEntregasRealizadas((Long) result.get(0)[1]);
         entregaDashboard.setEntregasPendientes((Long) result.get(0)[2]);
@@ -240,5 +247,51 @@ public class EntregaServices {
                 ordenServicioRepository.save(ordenServicioEntity);
             }
         }
+    }
+
+    public List<Kpi> getKpis(EntregaFiltro filtro) {
+        List<Kpi> kpis = new ArrayList<>();
+
+        Kpi entregasATiempo = new Kpi();
+
+        BigDecimal entregasATiempoValor = entregaRepository.getPromedioKPIEntregasATiempo(filtro.getEscuela(), filtro.getFecha(), filtro.getCategoria());
+
+        entregasATiempo.setNombre("Entregas a Tiempo");
+        entregasATiempo.setValor(entregasATiempoValor);
+        entregasATiempo.setPorcentaje(entregasATiempoValor.divide(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP));
+        entregasATiempo.setUnidad("%");
+
+        kpis.add(entregasATiempo);
+
+        Kpi quiebreStock = new Kpi();
+
+        BigDecimal quiebreStockValor = entregaRepository.getPromedioKPIQuiebreStock(filtro.getEscuela(), filtro.getFecha(), filtro.getCategoria());
+        quiebreStock.setNombre("Quiebre de Stock");
+        quiebreStock.setValor(quiebreStockValor
+                .setScale(2, RoundingMode.HALF_UP));
+        quiebreStock.setPorcentaje(quiebreStockValor.divide(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP));
+        quiebreStock.setUnidad("%");
+
+        kpis.add(quiebreStock);
+
+        Kpi tiempoRespuestaInterno = new Kpi();
+
+        BigDecimal tiempoRespuestaInternoValor = entregaRepository.getPromedioTiempoRespuestaInterno(filtro.getEscuela(), filtro.getFecha(), filtro.getCategoria());
+
+        if (tiempoRespuestaInternoValor == null) {
+            tiempoRespuestaInternoValor = BigDecimal.ZERO;
+        }
+        tiempoRespuestaInterno.setNombre("Tiempo de Respuesta Interno");
+        tiempoRespuestaInterno.setValor(tiempoRespuestaInternoValor
+                .setScale(2, RoundingMode.HALF_UP));
+        tiempoRespuestaInterno.setPorcentaje(tiempoRespuestaInternoValor.divide(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP));
+        tiempoRespuestaInterno.setUnidad("Horas");
+
+        kpis.add(tiempoRespuestaInterno);
+
+        return kpis;
     }
 }
