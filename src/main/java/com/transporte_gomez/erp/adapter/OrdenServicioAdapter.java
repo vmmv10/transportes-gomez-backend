@@ -2,6 +2,7 @@ package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.OrdenServicio;
 import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
+import com.transporte_gomez.erp.dto.SaldoBodega;
 import com.transporte_gomez.erp.entity.*;
 import com.transporte_gomez.erp.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -20,17 +21,16 @@ import java.util.List;
 public class OrdenServicioAdapter {
 
     private final OrdenServicioDetalleAdapter ordenServicioDetalleAdapter;
-    private final ProveedorAdpater proveedorAdpater;
     private final DocumentoAdapter documentoAdapter;
     private final EscuelaAdapter escuelaAdapter;
     private final CategoriaAdapter categoriaAdapter;
-    private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
     private final EscuelaRepository escuelaRepository;
     private final DocumentoRepository documentoRepository;
     private final DocumentoTipoRepository documentoTipoRepository;
     private final BodegaRepository bodegaRepository;
     private final CategoriaRepository categoriaRepository;
     private final BodegaAdapter bodegaAdapter;
+    private final ItemAdapter itemAdapter;
 
     public OrdenServicio getOrdenServicio(OrdenServicioEntity ordenServicioEntity, boolean conDetalles) {
         OrdenServicio ordenServicio = new OrdenServicio();
@@ -151,16 +151,22 @@ public class OrdenServicioAdapter {
         OrdenServicio ordenServicio = new OrdenServicio();
 
         ordenServicio.setIngreso(ingreso.getId());
-
+        ordenServicio.setDocumentoReferencia(ingreso.getOrdenCompra() != null ? String.valueOf(ingreso.getOrdenCompra()) : null);
         ordenServicio.setBodega(bodegaAdapter.getBodega(bodegaRepository.findById(1L).orElseThrow()));
 
         List<OrdenServicioDetalle> detalles = new ArrayList<>();
 
         for (IngresosDetalleEntity detalleEntity : ingreso.getDetalles()) {
             OrdenServicioDetalle detalle = new OrdenServicioDetalle();
-            detalle.setCantidad(detalleEntity.getCantidad());
+            detalle.setCantidad(detalleEntity.getSaldo());
             detalle.setNombre(detalleEntity.getItem().getNombre());
             detalle.setItem(detalleEntity.getItem().getId());
+
+            SaldoBodega saldoBodega = new SaldoBodega();
+            saldoBodega.setSaldo(detalleEntity.getSaldo());
+            saldoBodega.setItem(itemAdapter.getItem(detalleEntity.getItem()));
+
+            detalle.setSaldoBodega(saldoBodega);
             detalles.add(detalle);
         }
 

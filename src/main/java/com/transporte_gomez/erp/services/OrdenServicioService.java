@@ -212,7 +212,7 @@ public class OrdenServicioService {
             tableProveedor.addCell(celda("Razón Social", Element.ALIGN_LEFT));
             tableProveedor.addCell(celda("Sociedad Comercial Gomez Velásquez Ltda.", Element.ALIGN_LEFT));
             tableProveedor.addCell(celda("Rut", Element.ALIGN_LEFT));
-            tableProveedor.addCell(celda("76.651.672-5", Element.ALIGN_LEFT));
+            tableProveedor.addCell(celda("76.651.672-6", Element.ALIGN_LEFT));
             tableProveedor.addCell(celda("Dirección", Element.ALIGN_LEFT));
             tableProveedor.addCell(celda("Pasaje Los Coigues 109, Quemchi", Element.ALIGN_LEFT));
             tableProveedor.setWidths(new float[] { 1f, 4f });

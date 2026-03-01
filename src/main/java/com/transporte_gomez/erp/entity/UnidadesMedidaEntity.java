@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "unidades_medida", schema = "qa")
+@Table(name = "unidades_medida")
 public class UnidadesMedidaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

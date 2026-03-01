@@ -26,5 +26,7 @@ public interface OrdenServicioDetalleRepository extends JpaRepository<OrdenServi
     List<Object[]> findItemsMasDespachadosPorEscuela(@Param("escuelaId") Long escuelaId, @Param("oc") String oc,
                                                      @Param("categoria") Integer categoria);
 
+    @Query("select o from OrdenServicioDetalleEntity o where o.ordenServicio.id = ?1")
+    List<OrdenServicioDetalleEntity> findByOrdenServicio_Id(Long id);
 
 }

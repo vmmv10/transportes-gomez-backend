@@ -3,7 +3,9 @@ package com.transporte_gomez.erp.enums;
 public enum IngresoEstado {
     TERMPORAL("Temporal", 0),
     ABIERTO("Abierto", 1),
-    CERRADO("Cerrado", 2);
+    CERRADO("Cerrado", 2),
+    INHABILITADO("Inhabilitado", 3),
+    HABILITADO("Habilitado", 4);
 
     private final String descripcion;
     private final Integer codigo;

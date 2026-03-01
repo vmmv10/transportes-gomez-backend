@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
-@Table(name = "usuarios", schema = "qa")
+@Table(name = "usuarios")
 @Getter
 @Setter
 @NoArgsConstructor

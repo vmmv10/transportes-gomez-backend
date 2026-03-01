@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "ingresos", schema = "qa")
+@Table(name = "ingresos")
 public class IngresosEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,4 +50,6 @@ public class IngresosEntity {
     @Column(name = "fecha_cierre")
     private LocalDateTime fechaCierre;
 
+    @Column(name = "orden_compra")
+    private String ordenCompra;
 }
