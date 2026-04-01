@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class Devolucion {
-    private Long id;
+    private Integer id;
     private String motivo;
     private String fecha;
     private Integer estado;

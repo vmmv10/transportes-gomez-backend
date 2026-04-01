@@ -9,7 +9,7 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "proveedores", schema = "qa")
+@Table(name = "proveedores")
 public class ProveedorEntity {
 
     @Id

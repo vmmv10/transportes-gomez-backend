@@ -41,7 +41,6 @@ public class DevolucionService {
     public Devolucion create(Devolucion devolucion, Usuario usuario) {
         DevolucionEntity devolucionEntity = devolucionAdapter.createDevolucion(devolucion);
         devolucionEntity.setFecha(Instant.now());
-        devolucionEntity.setUser(usuario.getId());
         devolucionEntity = devolucionRepository.save(devolucionEntity);
         return devolucionAdapter.getDto(devolucionEntity, false);
     }
@@ -94,7 +93,7 @@ public class DevolucionService {
         if (DevolucionEstado.CERRADO.getCodigo().equals(estado)) {
             devolucionEntity.setFecha(Instant.now());
             devolucionEntity.getDevolucionesDetalles().forEach(detalle -> {
-                movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getItem().getId(), 2L, devolucionEntity.getId(), detalle.getCantidad());
+                movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getItem().getId(), 2L, Long.valueOf(devolucionEntity.getId()), detalle.getCantidad());
                 saldoBodegaService.createOrUpdate(detalle.getItem().getId(), 2l, "ENTRADA", detalle.getCantidad());
             });
         }

@@ -10,7 +10,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "imagenes", schema = "qa")
+@Table(name = "imagenes")
 public class ImagenEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

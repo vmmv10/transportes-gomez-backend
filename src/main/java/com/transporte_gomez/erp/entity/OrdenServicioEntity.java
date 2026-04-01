@@ -15,7 +15,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "ordenes_servicios", schema = "qa")
+@Table(name = "ordenes_servicios")
 public class OrdenServicioEntity {
 
     @Id

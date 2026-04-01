@@ -26,12 +26,15 @@ public class IngresosAdapter {
         Ingresos dto = new Ingresos();
         dto.setId(entity.getId());
         dto.setFecha(String.valueOf(entity.getFecha()));
-        dto.setFechaCierre(String.valueOf(entity.getFechaCierre()));
+        dto.setFechaCierre(entity.getFechaCierre() != null ? String.valueOf(entity.getFechaCierre()): null);
         dto.setDocumento(entity.getDocumento());
-        dto.setDocumentoTipo(documentoTipoAdapter.getDocumentoTipo(entity.getDocumentoTipo()));
+        if (entity.getDocumentoTipo() != null) {
+            dto.setDocumentoTipo(documentoTipoAdapter.getDocumentoTipo(entity.getDocumentoTipo()));
+        }
         dto.setObservaciones(entity.getObservaciones());
         dto.setBodega(bodegaAdapter.getBodega(entity.getBodega()));
         dto.setEstado(entity.getEstado());
+        dto.setOrdenCompra(entity.getOrdenCompra());
 
         if (conDetalles) {
             dto.setDetalles(entity.getDetalles().stream()
@@ -60,6 +63,7 @@ public class IngresosAdapter {
         entity.setBodega(bodegaRepository.findById(dto.getBodega().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Bodega no encontrada con ID: " + dto.getBodega().getId())));
         entity.setEstado(IngresoEstado.TERMPORAL.getCodigo());
+        entity.setOrdenCompra(dto.getOrdenCompra());
         return entity;
     }
 

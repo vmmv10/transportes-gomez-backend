@@ -12,12 +12,12 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "devoluciones", schema = "qa")
+@Table(name = "devoluciones")
 public class DevolucionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "escuela_id")

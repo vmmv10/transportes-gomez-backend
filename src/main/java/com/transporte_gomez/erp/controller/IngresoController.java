@@ -1,13 +1,11 @@
 package com.transporte_gomez.erp.controller;
 
-import com.transporte_gomez.erp.dto.Ingresos;
-import com.transporte_gomez.erp.dto.IngresosDetalle;
-import com.transporte_gomez.erp.dto.IngresosFiltro;
-import com.transporte_gomez.erp.dto.Usuario;
+import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.enums.IngresoEstado;
 import com.transporte_gomez.erp.services.IngresoService;
 import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -58,6 +56,16 @@ public class IngresoController {
         ingresoService.updateEstado(folio, IngresoEstado.CERRADO.getCodigo());
     }
 
+    @PutMapping("/{folio}/habilitar")
+    public void habilitar(@PathVariable Integer folio) {
+        ingresoService.updateEstado(folio, IngresoEstado.HABILITADO.getCodigo());
+    }
+
+    @PutMapping("/{folio}/inhabilitar")
+    public void inhabilitar(@PathVariable Integer folio) {
+        ingresoService.updateEstado(folio, IngresoEstado.INHABILITADO.getCodigo());
+    }
+
     @PutMapping("/detalles/{id}/editar-cantidad")
     public void modificarCantidadDetalle(@PathVariable Integer id, @RequestBody IngresosDetalle ingresosEmergenciaDetalle) {
         ingresoService.modificarCantidadDetalle(id, ingresosEmergenciaDetalle.getCantidad());
@@ -76,5 +84,16 @@ public class IngresoController {
     @DeleteMapping("/{folio}")
     public void eliminarIngreso(@PathVariable Integer folio) {
         ingresoService.delete(folio);
+    }
+
+    @GetMapping("/{id}/conversacion")
+    public IngresoConversacion getConversacion(@PathVariable Integer id) {
+        return ingresoService.getConversacion(id);
+    }
+
+    @PostMapping("/{id}/conversacion/mensaje")
+    public IngresoMensaje crearMensaje(@PathVariable Integer id, @RequestBody IngresoMensaje mensaje, @AuthenticationPrincipal Jwt jwt) {
+        Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
+        return ingresoService.crearMensaje(id, mensaje, usuario);
     }
 }

@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "entregas", schema = "qa")
+@Table(name = "entregas")
 public class EntregaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

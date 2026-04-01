@@ -11,7 +11,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "movimientos_inventario", schema = "qa")
+@Table(name = "movimientos_inventario")
 public class MovimientosInventarioEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

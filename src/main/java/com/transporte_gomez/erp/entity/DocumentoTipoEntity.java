@@ -8,7 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @Setter
 @Entity
-@Table(name = "documentos_tipos", schema = "qa")
+@Table(name = "documentos_tipos")
 public class DocumentoTipoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

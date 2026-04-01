@@ -15,4 +15,5 @@ public class Ingresos {
     private String observaciones;
     private Bodega bodega;
     private Integer estado;
+    private String ordenCompra;
 }

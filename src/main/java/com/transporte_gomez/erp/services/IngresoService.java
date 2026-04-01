@@ -13,6 +13,7 @@ import com.transporte_gomez.erp.enums.MovimientoInventarioTipo;
 import com.transporte_gomez.erp.enums.MovimientoInventarioTipoOperacion;
 import com.transporte_gomez.erp.repository.IngresosDetalleRepository;
 import com.transporte_gomez.erp.repository.IngresosRepository;
+import com.transporte_gomez.erp.repository.OrdenServicioDetalleRepository;
 import com.transporte_gomez.erp.specification.IngresosSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,8 @@ public class IngresoService {
     private final ItemService itemService;
     private final SaldoBodegaService saldoBodegaService;
     private final MovimientoInventarioService movimientoInventarioService;
+    private final IngresosConversacionesServices ingresosConversacionesServices;
+    private final OrdenServicioDetalleRepository ordenServicioDetalleRepository;
 
     public Page<Ingresos> findAll(Pageable pageable, IngresosFiltro filtros) {
         return ingresosRepository.findAll(IngresosSpecification.conFiltros(filtros),pageable)
@@ -98,11 +101,25 @@ public class IngresoService {
         if (IngresoEstado.CERRADO.getCodigo().equals(estado)) {
             ingresoEntity.setFechaCierre(LocalDateTime.now());
             ingresoEntity.getDetalles().forEach(detalle -> {
+                detalle.setSaldo(detalle.getCantidad());
+            });
+        }
+
+        if (IngresoEstado.HABILITADO.getCodigo().equals(estado)) {
+            ingresoEntity.getDetalles().forEach(detalle -> {
                 movimientoInventarioService.create(MovimientoInventarioTipo.INGRESO, MovimientoInventarioTipoOperacion.ENTRADA, detalle.getItem().getId(), ingresoEntity.getBodega().getId(), Long.valueOf(folio), detalle.getCantidad());
                 saldoBodegaService.createOrUpdate(detalle.getItem().getId(), ingresoEntity.getBodega().getId(), "ENTRADA", detalle.getCantidad());
             });
+            ingresoEntity.getDetalles().forEach(detalle -> {
+                detalle.setSaldo(detalle.getCantidad());
+            });
         }
-        ingresosRepository.save(ingresoEntity);
+
+        IngresosEntity ingresosEntitySave = ingresosRepository.save(ingresoEntity);
+
+        if (IngresoEstado.INHABILITADO.getCodigo().equals(estado)) {
+            ingresosConversacionesServices.crearConversacion(ingresosEntitySave);
+        }
     }
 
     public void modificarCantidadDetalle(Integer detalleId, BigDecimal cantidad) {
@@ -139,8 +156,10 @@ public class IngresoService {
         IngresosEntity ingresoEntity = ingresosRepository.findById(ordenServicioEntity.getIngreso())
                 .orElseThrow(() -> new IllegalArgumentException("Ingreso no encontrado con folio: " + ordenServicioEntity.getIngreso()));
 
+        List<OrdenServicioDetalleEntity> detallesOs = ordenServicioDetalleRepository.findByOrdenServicio_Id(ordenServicioEntity.getId());
+
         for (IngresosDetalleEntity detalle : ingresoEntity.getDetalles()) {
-            for (OrdenServicioDetalleEntity detalleOs : ordenServicioEntity.getDetalles()) {
+            for (OrdenServicioDetalleEntity detalleOs : detallesOs) {
                 if (detalle.getItem().getId().equals(detalleOs.getItem())) {
                     BigDecimal nuevaCantidad = detalle.getSaldo().subtract(detalleOs.getCantidad());
                     detalle.setSaldo(nuevaCantidad.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : nuevaCantidad);
@@ -165,5 +184,13 @@ public class IngresoService {
         }
 
         ingresosRepository.save(ingresoEntity);
+    }
+
+    public IngresoConversacion getConversacion(Integer id) {
+        return ingresosConversacionesServices.getConversacion(id);
+    }
+
+    public IngresoMensaje crearMensaje(Integer id, IngresoMensaje mensaje, Usuario usuario) {
+        return ingresosConversacionesServices.crearMensaje(id, mensaje, usuario);
     }
 }
