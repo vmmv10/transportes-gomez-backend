@@ -1,6 +1,7 @@
 package com.transporte_gomez.erp.controller;
 
 import com.transporte_gomez.erp.dto.*;
+import com.transporte_gomez.erp.services.OrdenServicioPdfService;
 import com.transporte_gomez.erp.services.OrdenServicioService;
 import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class OrdenServicioController {
 
     private final OrdenServicioService ordenServicioService;
     private final UsuarioService usuarioService;
+    private final OrdenServicioPdfService ordenServicioPdfService;
 
     @GetMapping()
     public Page<OrdenServicio> getOrdenServicios(Pageable pageable, OrdenServicioFiltro filtro) {
@@ -58,7 +60,7 @@ public class OrdenServicioController {
 
     @PostMapping("/{id}/pdf")
     public ResponseEntity<byte[]> generarPdf(@PathVariable Long id) {
-        return ordenServicioService.generarPdf(id);
+        return ordenServicioPdfService.generarPdf(id);
     }
 
     @DeleteMapping("/detalles/{detalleId}")

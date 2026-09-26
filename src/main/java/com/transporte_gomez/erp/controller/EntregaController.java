@@ -6,12 +6,18 @@ import com.transporte_gomez.erp.services.UsuarioService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -29,6 +35,24 @@ public class EntregaController {
             filtro.setChofer(usuario.getId());
         }
         return entregaServices.getEntregas(pageable, filtro);
+    }
+
+    @RequestMapping(value = "/excel", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<byte[]> descargarExcel(EntregaFiltro filtro, Sort sort, @AuthenticationPrincipal Jwt jwt) {
+        Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
+        if (usuario.getRol() != null && usuario.getRol().equalsIgnoreCase("repartidor")) {
+            filtro.setChofer(usuario.getId());
+        }
+
+        byte[] excel = entregaServices.generarExcel(filtro, sort);
+        String nombreArchivo = "Entregas_" + LocalDate.now() + ".xlsx";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(nombreArchivo, StandardCharsets.UTF_8).build().toString())
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentLength(excel.length)
+                .body(excel);
     }
 
     @DeleteMapping("/{id}")

@@ -11,18 +11,27 @@ import com.transporte_gomez.erp.repository.RutaRepository;
 import com.transporte_gomez.erp.specification.EntregaSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -38,6 +47,94 @@ public class EntregaServices {
     public Page<Entrega> getEntregas(Pageable pageable, EntregaFiltro filtro) {
         return entregaRepository.findAll(EntregaSpecification.conFiltros(filtro), pageable)
                 .map(entregaAdapter::getEntrega);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generarExcel(EntregaFiltro filtro, Sort sort) {
+        Sort orden = (sort == null || sort.isUnsorted()) ? Sort.by(Sort.Direction.DESC, "id") : sort;
+        List<EntregaEntity> entregas = entregaRepository.findAll(EntregaSpecification.conFiltros(filtro), orden);
+
+        ZoneId zonaChile = ZoneId.of("America/Santiago");
+        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter formatoFechaHora = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
+        String[] columnas = {
+                "ID Entrega", "Orden de Servicio", "Fecha Ruta", "Ruta", "Chofer", "Orden en Ruta",
+                "Escuela", "RBD", "Comuna", "Categoría", "OC / Doc. Referencia", "Estado", "Fecha Entrega"
+        };
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Entregas");
+
+            Font fontHeader = workbook.createFont();
+            fontHeader.setBold(true);
+            fontHeader.setColor(IndexedColors.WHITE.getIndex());
+
+            CellStyle estiloHeader = workbook.createCellStyle();
+            estiloHeader.setFont(fontHeader);
+            estiloHeader.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+            estiloHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            estiloHeader.setAlignment(HorizontalAlignment.CENTER);
+            estiloHeader.setBorderBottom(BorderStyle.THIN);
+
+            Row header = sheet.createRow(0);
+            for (int i = 0; i < columnas.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(columnas[i]);
+                cell.setCellStyle(estiloHeader);
+            }
+
+            int filaIdx = 1;
+            for (EntregaEntity entrega : entregas) {
+                Row row = sheet.createRow(filaIdx++);
+                OrdenServicioEntity os = entrega.getOrdenServicio();
+                RutaEntity ruta = entrega.getRuta();
+
+                setCell(row, 0, entrega.getId());
+                setCell(row, 1, os != null ? os.getId() : null);
+                setCell(row, 2, ruta != null && ruta.getFecha() != null ? ruta.getFecha().format(formatoFecha) : null);
+                setCell(row, 3, ruta != null ? ruta.getId() : null);
+                setCell(row, 4, ruta != null && ruta.getChofer() != null ? nombreCompleto(ruta.getChofer().getNombre(), ruta.getChofer().getApellidos()) : null);
+                setCell(row, 5, entrega.getOrden());
+                setCell(row, 6, os != null && os.getEscuela() != null ? os.getEscuela().getNombre() : null);
+                setCell(row, 7, os != null && os.getEscuela() != null ? os.getEscuela().getRbd() : null);
+                setCell(row, 8, os != null && os.getEscuela() != null ? os.getEscuela().getComuna() : null);
+                setCell(row, 9, os != null && os.getCategoria() != null ? os.getCategoria().getNombre() : null);
+                setCell(row, 10, os != null ? os.getDocumentoReferencia() : null);
+                setCell(row, 11, Boolean.TRUE.equals(entrega.getEntregado()) ? "Entregado" : "No Entregado");
+                setCell(row, 12, entrega.getFecha() != null
+                        ? entrega.getFecha().atZoneSameInstant(zonaChile).format(formatoFechaHora) : null);
+            }
+
+            sheet.setAutoFilter(new CellRangeAddress(0, Math.max(filaIdx - 1, 0), 0, columnas.length - 1));
+            sheet.createFreezePane(0, 1);
+            for (int i = 0; i < columnas.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            log.error("Error generando Excel de entregas", e);
+            throw new RuntimeException("Error al generar el Excel de entregas", e);
+        }
+    }
+
+    private void setCell(Row row, int col, Object valor) {
+        Cell cell = row.createCell(col);
+        if (valor == null) {
+            cell.setBlank();
+        } else if (valor instanceof Number n) {
+            cell.setCellValue(n.doubleValue());
+        } else {
+            cell.setCellValue(valor.toString());
+        }
+    }
+
+    private String nombreCompleto(String nombre, String apellidos) {
+        String n = nombre != null ? nombre : "";
+        String a = apellidos != null ? apellidos : "";
+        return (n + " " + a).trim();
     }
 
     public void crearEntregas(RutaEntity rutaEntity, List<OrdenServicio> ordenServicioList) {
@@ -60,9 +157,26 @@ public class EntregaServices {
 
     }
 
+    @Transactional
     public void updateEntregas(RutaEntity rutaEntity, List<OrdenServicio> ordenServicioList) {
+        Set<Long> ordenesSolicitadas = new HashSet<>();
+        for (OrdenServicio ordenServicio : ordenServicioList) {
+            ordenesSolicitadas.add(ordenServicio.getId());
+        }
+
+        List<EntregaEntity> entregasExistentes = entregaRepository.findByRuta_Id(rutaEntity.getId());
+        for (EntregaEntity entregaExistente : entregasExistentes) {
+            Long ordenId = entregaExistente.getOrdenServicio().getId();
+            if (!ordenesSolicitadas.contains(ordenId)) {
+                desasociarEntrega(entregaExistente);
+                entregaRepository.delete(entregaExistente);
+            }
+        }
+
         for (int i = 0; i < ordenServicioList.size(); i++) {
             Optional<EntregaEntity> entregaEntity = entregaRepository.findByRuta_IdAndOrdenServicio_Id(rutaEntity.getId(), ordenServicioList.get(i).getId());
+            OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(ordenServicioList.get(i).getId())
+                    .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada"));
             if (entregaEntity.isPresent()) {
                 // Actualizar entrega existente
                 EntregaEntity existingEntrega = entregaEntity.get();
@@ -70,13 +184,11 @@ public class EntregaServices {
                 entregaRepository.save(existingEntrega);
             } else {
                 // Crear nueva entrega si no existe
-                OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(ordenServicioList.get(i).getId())
-                        .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada"));
                 EntregaEntity nuevaEntrega = entregaAdapter.createEntrega(rutaEntity, ordenServicioEntity, i + 1);
                 entregaRepository.save(nuevaEntrega);
-                ordenServicioEntity.setEnRuta(true);
-                ordenServicioRepository.save(ordenServicioEntity);
             }
+            ordenServicioEntity.setEnRuta(true);
+            ordenServicioRepository.save(ordenServicioEntity);
         }
     }
 
@@ -84,14 +196,13 @@ public class EntregaServices {
         entregaRepository.deleteById(id);
     }
 
+    @Transactional
     public void deleteEntregaByRutaAndOrden(Integer ruta, Long orden) {
         EntregaEntity entregaEntity = entregaRepository.findByRuta_IdAndOrdenServicio_Id(ruta, orden)
                 .orElseThrow(() -> new RuntimeException("Entrega not found for ruta: " + ruta + " and orden: " + orden));
-        entregaRepository.delete(entregaEntity);
 
-        OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
-        ordenServicioEntity.setEnRuta(false);
-        ordenServicioRepository.save(ordenServicioEntity);
+        desasociarEntrega(entregaEntity);
+        entregaRepository.delete(entregaEntity);
     }
 
     public List<Reporte> obtenerEntregasEntregadasPorMes(EntregaFiltro filtro) {
@@ -293,5 +404,12 @@ public class EntregaServices {
         kpis.add(tiempoRespuestaInterno);
 
         return kpis;
+    }
+
+    private void desasociarEntrega(EntregaEntity entregaEntity) {
+        OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
+        ordenServicioEntity.setEntrega(null);
+        ordenServicioEntity.setEnRuta(false);
+        ordenServicioRepository.save(ordenServicioEntity);
     }
 }

@@ -71,7 +71,6 @@ public class RutaService {
 
     public Ruta obtenerRutaUsuarioAndFechaHoy(Usuario usuario) {
         LocalDate hoyChile = LocalDate.now(ZoneId.of("America/Santiago"));
-        log.info("usuario {} ", usuario);
         List<RutaEntity> rutaEntityOptional = rutaRepository.findByChofer_IdAndFechaAndEstado(usuario.getId(), hoyChile, "PENDIENTE");
         if (rutaEntityOptional.isEmpty()) {
             return null;

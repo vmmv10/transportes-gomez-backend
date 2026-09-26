@@ -2,6 +2,7 @@ package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.Escuela;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class EscuelaAdapter {
 
     public Escuela toDto(EscuelaEntity escuelaEntity) {
@@ -51,6 +53,8 @@ public class EscuelaAdapter {
         escuelaEntity.setLongitud(escuela.getLongitud());
         escuelaEntity.setRbd(escuela.getRbd());
         escuelaEntity.setComuna(escuela.getComuna());
+        escuelaEntity.setDirector(escuela.getDirector());
+        escuelaEntity.setDireccion(escuela.getDireccion());
         return escuelaEntity;
     }
 
