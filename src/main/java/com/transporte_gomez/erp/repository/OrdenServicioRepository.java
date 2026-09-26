@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface OrdenServicioRepository extends JpaRepository<OrdenServicioEntity, Long> {
+
+    /** Órdenes asociadas a un contrato (para no eliminar contratos en uso). */
+    long countByContrato_Id(Long contratoId);
     Page<OrdenServicioEntity> findAll(Specification<OrdenServicioEntity> ordenServicioSpecification, Pageable pageable);
 
     @Query(value = """

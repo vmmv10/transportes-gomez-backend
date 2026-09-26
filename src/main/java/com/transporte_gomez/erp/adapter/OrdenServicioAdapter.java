@@ -198,11 +198,11 @@ public class OrdenServicioAdapter {
             throw new IllegalArgumentException("La orden de servicio debe tener escuela o destino");
         }
 
-        // Contrato
-        if (dto.getContrato() != null && dto.getContrato().getId() != null) {
-            entity.setContrato(contratoRepository.findById(dto.getContrato().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Contrato no encontrado con ID: " + dto.getContrato().getId())));
-        }
+        // Contrato (el formulario siempre envía la orden completa: sin contrato = se quita)
+        entity.setContrato(dto.getContrato() != null && dto.getContrato().getId() != null
+                ? contratoRepository.findById(dto.getContrato().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Contrato no encontrado con ID: " + dto.getContrato().getId()))
+                : null);
 
         // Cliente
         if (dto.getCliente() != null && dto.getCliente().getId() != null) {
@@ -230,11 +230,11 @@ public class OrdenServicioAdapter {
             servicioTipoRepository.findByCodigo(ServicioTipoEntity.CARGA_TERRESTRE).ifPresent(entity::setServicioTipo);
         }
 
-        // Proveedor de la mercadería
-        if (dto.getProveedor() != null && dto.getProveedor().getId() != null) {
-            entity.setProveedor(proveedorRepository.findById(dto.getProveedor().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado con ID: " + dto.getProveedor().getId())));
-        }
+        // Proveedor de la mercadería (sin proveedor = se quita)
+        entity.setProveedor(dto.getProveedor() != null && dto.getProveedor().getId() != null
+                ? proveedorRepository.findById(dto.getProveedor().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado con ID: " + dto.getProveedor().getId()))
+                : null);
     }
 
     public OrdenServicio getByIngreso(IngresosEntity ingreso) {
