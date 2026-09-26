@@ -18,12 +18,12 @@ public interface OrdenServicioRepository extends JpaRepository<OrdenServicioEnti
             i.id              AS item_id,
             i.nombre          AS item_nombre,
             SUM(d.cantidad)   AS cantidad
-        FROM qa.ordenes_servicios os
-        JOIN qa.escuelas e
+        FROM ordenes_servicios os
+        JOIN escuelas e
             ON e.id = os.escuela_id
-        JOIN qa.ordenes_servicios_detalles d
+        JOIN ordenes_servicios_detalles d
             ON d.orden_servicio = os.id
-        JOIN qa.item i
+        JOIN item i
             ON i.id = d.item
         WHERE (:entregado IS NULL OR os.entregado = :entregado)
           AND (:escuela_id IS NULL OR os.escuela_id = :escuela_id)
@@ -36,12 +36,12 @@ public interface OrdenServicioRepository extends JpaRepository<OrdenServicioEnti
         SELECT COUNT(*) 
         FROM (
             SELECT 1
-            FROM qa.ordenes_servicios os
-            JOIN qa.escuelas e
+            FROM ordenes_servicios os
+            JOIN escuelas e
                 ON e.id = os.escuela_id
-            JOIN qa.ordenes_servicios_detalles d
+            JOIN ordenes_servicios_detalles d
                 ON d.orden_servicio = os.id
-            JOIN qa.item i
+            JOIN item i
                 ON i.id = d.item
             WHERE (:entregado IS NULL OR os.entregado = :entregado)
               AND (:escuela_id IS NULL OR os.escuela_id = :escuela_id)
