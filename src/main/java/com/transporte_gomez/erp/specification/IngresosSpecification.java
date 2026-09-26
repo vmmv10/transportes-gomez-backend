@@ -33,6 +33,14 @@ public class IngresosSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("estado"), filtro.getEstado()));
             }
 
+            if (filtro.getCliente() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("cliente").get("id"), filtro.getCliente()));
+            }
+
+            if (filtro.getTransportista() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("transportista").get("id"), filtro.getTransportista()));
+            }
+
             return predicates;
         };
     }

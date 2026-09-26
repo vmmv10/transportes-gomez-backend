@@ -2,6 +2,8 @@ package com.transporte_gomez.erp.adapter;
 
 import com.transporte_gomez.erp.dto.Escuela;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
+import com.transporte_gomez.erp.repository.ClienteRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +13,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class EscuelaAdapter {
+
+    private final ClienteRepository clienteRepository;
 
     public Escuela toDto(EscuelaEntity escuelaEntity) {
         Escuela escuela = new Escuela();
@@ -25,6 +30,7 @@ public class EscuelaAdapter {
         escuela.setLatitud(escuelaEntity.getLatitud());
         escuela.setLongitud(escuelaEntity.getLongitud());
         escuela.setComuna(escuelaEntity.getComuna());
+        escuela.setClienteId(escuelaEntity.getCliente() != null ? escuelaEntity.getCliente().getId() : null);
         return escuela;
     }
 
@@ -44,6 +50,7 @@ public class EscuelaAdapter {
         escuelaEntity.setDireccion(escuela.getDireccion());
         escuelaEntity.setEmail(escuela.getEmail());
         escuelaEntity.setTelefono(escuela.getTelefono());
+        asignarCliente(escuela, escuelaEntity);
         return escuelaEntity;
     }
 
@@ -55,7 +62,16 @@ public class EscuelaAdapter {
         escuelaEntity.setComuna(escuela.getComuna());
         escuelaEntity.setDirector(escuela.getDirector());
         escuelaEntity.setDireccion(escuela.getDireccion());
+        asignarCliente(escuela, escuelaEntity);
         return escuelaEntity;
+    }
+
+    /** Solo cambia el cliente si viene en la solicitud (las pantallas actuales no lo envían). */
+    private void asignarCliente(Escuela escuela, EscuelaEntity escuelaEntity) {
+        if (escuela.getClienteId() != null) {
+            escuelaEntity.setCliente(clienteRepository.findById(escuela.getClienteId())
+                    .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + escuela.getClienteId())));
+        }
     }
 
 

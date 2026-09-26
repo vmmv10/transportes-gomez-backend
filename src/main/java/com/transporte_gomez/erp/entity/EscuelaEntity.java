@@ -2,6 +2,8 @@ package com.transporte_gomez.erp.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.ZonedDateTime;
@@ -59,5 +61,12 @@ public class EscuelaEntity {
     @ColumnDefault("false")
     @Column(name = "activo", nullable = false)
     private Boolean activo = false;
+
+    /** Cliente al que pertenece (ej. SLEP Chiloé) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private ClienteEntity cliente;
 
 }

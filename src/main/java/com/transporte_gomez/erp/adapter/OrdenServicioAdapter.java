@@ -5,6 +5,7 @@ import com.transporte_gomez.erp.dto.OrdenServicioDetalle;
 import com.transporte_gomez.erp.dto.SaldoBodega;
 import com.transporte_gomez.erp.entity.*;
 import com.transporte_gomez.erp.repository.*;
+import com.transporte_gomez.erp.services.DestinoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,17 @@ public class OrdenServicioAdapter {
     private final CategoriaRepository categoriaRepository;
     private final BodegaAdapter bodegaAdapter;
     private final ItemAdapter itemAdapter;
+    private final ClienteAdapter clienteAdapter;
+    private final ServicioTipoAdapter servicioTipoAdapter;
+    private final DestinoAdapter destinoAdapter;
+    private final ProveedorAdpater proveedorAdpater;
+    private final ContratoAdapter contratoAdapter;
+    private final ClienteRepository clienteRepository;
+    private final ServicioTipoRepository servicioTipoRepository;
+    private final DestinoRepository destinoRepository;
+    private final ProveedorRepository proveedorRepository;
+    private final ContratoRepository contratoRepository;
+    private final DestinoService destinoService;
 
     public OrdenServicio getOrdenServicio(OrdenServicioEntity ordenServicioEntity, boolean conDetalles) {
         OrdenServicio ordenServicio = new OrdenServicio();
@@ -50,7 +62,9 @@ public class OrdenServicioAdapter {
                 .toOffsetDateTime();
 
         ordenServicio.setFecha(fechaChile);
-        ordenServicio.setEscuela(escuelaAdapter.toDto(ordenServicioEntity.getEscuela()));
+        if (ordenServicioEntity.getEscuela() != null) {
+            ordenServicio.setEscuela(escuelaAdapter.toDto(ordenServicioEntity.getEscuela()));
+        }
         ordenServicio.setEntregado(ordenServicioEntity.getEntregado());
         ordenServicio.setObservaciones(ordenServicioEntity.getObservaciones());
         ordenServicio.setIngreso(ordenServicioEntity.getIngreso());
@@ -73,6 +87,14 @@ public class OrdenServicioAdapter {
         if (ordenServicioEntity.getCategoria() != null) {
             ordenServicio.setCategoria(categoriaAdapter.get(ordenServicioEntity.getCategoria()));
         }
+
+        ordenServicio.setCliente(clienteAdapter.toDtoResumen(ordenServicioEntity.getCliente()));
+        ordenServicio.setServicioTipo(servicioTipoAdapter.toDto(ordenServicioEntity.getServicioTipo()));
+        ordenServicio.setDestino(destinoAdapter.toDto(ordenServicioEntity.getDestino()));
+        if (ordenServicioEntity.getProveedor() != null) {
+            ordenServicio.setProveedor(proveedorAdpater.getProveedor(ordenServicioEntity.getProveedor()));
+        }
+        ordenServicio.setContrato(contratoAdapter.toDto(ordenServicioEntity.getContrato()));
 
         return ordenServicio;
     }
@@ -118,6 +140,8 @@ public class OrdenServicioAdapter {
                     .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada con ID: " + ordenServicio.getCategoria().getId())));
         }
 
+        aplicarDatosLogisticos(ordenServicioEntity, ordenServicio);
+
         return ordenServicioEntity;
     }
 
@@ -144,13 +168,80 @@ public class OrdenServicioAdapter {
 
         ordenServicio.setIngreso(ordenServicioEntity.getIngreso());
 
+        aplicarDatosLogisticos(ordenServicioEntity, ordenServicio);
+
         return ordenServicioEntity;
+    }
+
+    /**
+     * Cliente, destino, tipo de servicio, proveedor y contrato.
+     * Lo que no venga en la solicitud se completa solo, para que las pantallas
+     * actuales (que solo envían la escuela) sigan funcionando:
+     *  - destino: el de la escuela (se crea si no existe)
+     *  - cliente: el del contrato, la escuela o el destino
+     *  - tipo de servicio: carga terrestre
+     */
+    private void aplicarDatosLogisticos(OrdenServicioEntity entity, OrdenServicio dto) {
+        // Destino
+        if (dto.getDestino() != null && dto.getDestino().getId() != null) {
+            entity.setDestino(destinoRepository.findById(dto.getDestino().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Destino no encontrado con ID: " + dto.getDestino().getId())));
+        } else if (entity.getEscuela() != null) {
+            DestinoEntity actual = entity.getDestino();
+            boolean destinoDeOtraEscuela = actual != null && actual.getEscuela() != null
+                    && !actual.getEscuela().getId().equals(entity.getEscuela().getId());
+            if (actual == null || destinoDeOtraEscuela) {
+                entity.setDestino(destinoService.obtenerOCrearParaEscuela(entity.getEscuela()));
+            }
+        }
+        if (entity.getEscuela() == null && entity.getDestino() == null) {
+            throw new IllegalArgumentException("La orden de servicio debe tener escuela o destino");
+        }
+
+        // Contrato
+        if (dto.getContrato() != null && dto.getContrato().getId() != null) {
+            entity.setContrato(contratoRepository.findById(dto.getContrato().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Contrato no encontrado con ID: " + dto.getContrato().getId())));
+        }
+
+        // Cliente
+        if (dto.getCliente() != null && dto.getCliente().getId() != null) {
+            entity.setCliente(clienteRepository.findById(dto.getCliente().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con ID: " + dto.getCliente().getId())));
+        } else if (entity.getCliente() == null) {
+            if (entity.getContrato() != null) {
+                entity.setCliente(entity.getContrato().getCliente());
+            } else if (entity.getEscuela() != null && entity.getEscuela().getCliente() != null) {
+                entity.setCliente(entity.getEscuela().getCliente());
+            } else if (entity.getDestino() != null) {
+                entity.setCliente(entity.getDestino().getCliente());
+            }
+        }
+        if (entity.getContrato() != null && entity.getCliente() != null
+                && !entity.getContrato().getCliente().getId().equals(entity.getCliente().getId())) {
+            throw new IllegalArgumentException("El contrato " + entity.getContrato().getCodigo() + " no pertenece al cliente de la orden");
+        }
+
+        // Tipo de servicio
+        if (dto.getServicioTipo() != null && dto.getServicioTipo().getId() != null) {
+            entity.setServicioTipo(servicioTipoRepository.findById(dto.getServicioTipo().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Tipo de servicio no encontrado con ID: " + dto.getServicioTipo().getId())));
+        } else if (entity.getServicioTipo() == null) {
+            servicioTipoRepository.findByCodigo(ServicioTipoEntity.CARGA_TERRESTRE).ifPresent(entity::setServicioTipo);
+        }
+
+        // Proveedor de la mercadería
+        if (dto.getProveedor() != null && dto.getProveedor().getId() != null) {
+            entity.setProveedor(proveedorRepository.findById(dto.getProveedor().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado con ID: " + dto.getProveedor().getId())));
+        }
     }
 
     public OrdenServicio getByIngreso(IngresosEntity ingreso) {
         OrdenServicio ordenServicio = new OrdenServicio();
 
         ordenServicio.setIngreso(ingreso.getId());
+        ordenServicio.setCliente(clienteAdapter.toDtoResumen(ingreso.getCliente()));
         ordenServicio.setDocumentoReferencia(ingreso.getOrdenCompra() != null ? String.valueOf(ingreso.getOrdenCompra()) : null);
         ordenServicio.setBodega(bodegaAdapter.getBodega(bodegaRepository.findById(1L).orElseThrow()));
 

@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -52,4 +53,21 @@ public class IngresosEntity {
 
     @Column(name = "orden_compra")
     private String ordenCompra;
+
+    /** Quién contrata el servicio / a quién se le cobra (ej. SLEP Chiloé) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private ClienteEntity cliente;
+
+    /** Quién trajo la carga a la bodega (ej. Kaiken, Starken) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "transportista_id")
+    private ProveedorEntity transportista;
+
+    @Column(name = "guia_transportista")
+    private String guiaTransportista;
+
+    @OneToMany(mappedBy = "ingreso", fetch = FetchType.LAZY)
+    @OrderBy("id")
+    private List<BultoEntity> bultos = new ArrayList<>();
 }

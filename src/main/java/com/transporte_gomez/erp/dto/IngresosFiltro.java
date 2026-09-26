@@ -10,4 +10,6 @@ public class IngresosFiltro {
     private Long ordenCompra;
     private Long bodega;
     private Integer estado;
+    private Long cliente;
+    private Long transportista;
 }

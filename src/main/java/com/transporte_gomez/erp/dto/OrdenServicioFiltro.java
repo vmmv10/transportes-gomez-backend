@@ -13,4 +13,8 @@ public class OrdenServicioFiltro {
     private Boolean entregado;
     private Integer categoria;
     private String documentoReferencia;
+    private Long clienteId;
+    private Long destinoId;
+    private Long contratoId;
+    private Integer servicioTipoId;
 }

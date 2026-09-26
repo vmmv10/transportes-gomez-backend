@@ -26,7 +26,7 @@ public class OrdenServicioEntity {
     private ZonedDateTime fecha = ZonedDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "escuela_id", nullable = false)
+    @JoinColumn(name = "escuela_id")
     private EscuelaEntity escuela;
 
     @Column(name = "observaciones")
@@ -68,5 +68,29 @@ public class OrdenServicioEntity {
 
     @Column(name = "ingreso")
     private Integer ingreso;
+
+    /** Quién contrata / a quién se le cobra */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private ClienteEntity cliente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "servicio_tipo_id")
+    private ServicioTipoEntity servicioTipo;
+
+    /** Punto de entrega (escuela, persona, empresa...) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destino_id")
+    private DestinoEntity destino;
+
+    /** Proveedor de la mercadería (ej. Kaiken, ABSA) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proveedor_id")
+    private ProveedorEntity proveedor;
+
+    /** Contrato o licitación bajo el que se presta el servicio */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contrato_id")
+    private ContratoEntity contrato;
 
 }

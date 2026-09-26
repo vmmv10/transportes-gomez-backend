@@ -9,6 +9,7 @@ import com.transporte_gomez.erp.dto.Establecimiento;
 import com.transporte_gomez.erp.entity.EscuelaEntity;
 import com.transporte_gomez.erp.repository.EscuelaRepository;
 import com.transporte_gomez.erp.specification.EscuelaSpecification;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class EscuelasService {
 
     private final EscuelaRepository escuelaRepository;
     private final EscuelaAdapter escuelaAdapter;
+    private final DestinoService destinoService;
 
     public Page<Escuela> findAll(EscuelaFilter escuelaFilter, Pageable pageable) {
         return escuelaRepository.findAll(EscuelaSpecification.conFiltros(escuelaFilter), pageable)
@@ -50,9 +52,11 @@ public class EscuelasService {
         escuelaRepository.save(escuelaAdapter.createEscuelaEntity(escuela));
     }
 
+    @Transactional
     public void updateEscuela(Long id, Escuela escuela) {
         EscuelaEntity escuelaEntity = escuelaRepository.getReferenceById(id);
-        escuelaRepository.save(escuelaAdapter.updateEscuelaEntity(escuela, escuelaEntity));
+        EscuelaEntity guardada = escuelaRepository.save(escuelaAdapter.updateEscuelaEntity(escuela, escuelaEntity));
+        destinoService.sincronizarDesdeEscuela(guardada);
     }
 
     public void leerEstablecimientos(MultipartFile file) throws Exception {

@@ -19,4 +19,9 @@ public class OrdenServicio {
     private String documentoReferencia;
     private Categoria categoria;
     private Integer ingreso;
+    private Cliente cliente;
+    private ServicioTipo servicioTipo;
+    private Destino destino;
+    private Proveedor proveedor;
+    private Contrato contrato;
 }

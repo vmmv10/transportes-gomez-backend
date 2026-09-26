@@ -42,6 +42,22 @@ public class OrdenServicioSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("categoria").get("id"), filtro.getCategoria()));
             }
 
+            if (filtro.getClienteId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("cliente").get("id"), filtro.getClienteId()));
+            }
+
+            if (filtro.getDestinoId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("destino").get("id"), filtro.getDestinoId()));
+            }
+
+            if (filtro.getContratoId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("contrato").get("id"), filtro.getContratoId()));
+            }
+
+            if (filtro.getServicioTipoId() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("servicioTipo").get("id"), filtro.getServicioTipoId()));
+            }
+
             return predicates;
         };
     }

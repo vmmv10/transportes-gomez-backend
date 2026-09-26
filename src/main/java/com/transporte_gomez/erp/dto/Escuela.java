@@ -17,4 +17,5 @@ public class Escuela {
     private String comuna;
     private String latitud;
     private String longitud;
+    private Long clienteId;
 }

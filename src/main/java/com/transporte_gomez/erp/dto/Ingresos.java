@@ -16,4 +16,11 @@ public class Ingresos {
     private Bodega bodega;
     private Integer estado;
     private String ordenCompra;
+    /** Quién contrata / a quién se le cobra */
+    private Cliente cliente;
+    /** Quién trajo la carga a la bodega */
+    private Proveedor transportista;
+    private String guiaTransportista;
+    /** Solo se llena al pedir el ingreso con detalles */
+    private List<Bulto> bultos;
 }
