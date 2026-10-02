@@ -3,6 +3,7 @@ package com.transporte_gomez.erp.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,5 +23,12 @@ public class Ruta {
     private Boolean enTransito;
     private Instant inicio;
     private Instant fin;
+    /** Kilómetros recorridos. Si hay odómetro de salida y llegada, se calcula con ellos. */
     private Integer kilometros;
+    /** Vacío = "Sin vehículo" */
+    private Vehiculo vehiculo;
+    private Integer kmSalida;
+    private Integer kmLlegada;
+    /** Suma de los costos de la ruta (solo lectura) */
+    private BigDecimal costoTotal;
 }

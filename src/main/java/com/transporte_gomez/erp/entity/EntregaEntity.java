@@ -7,6 +7,9 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.transporte_gomez.erp.enums.EntregaEstado;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
@@ -42,5 +45,23 @@ public class EntregaEntity {
 
     @Column(name = "fecha")
     private OffsetDateTime fecha;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, length = 20)
+    private EntregaEstado estado = EntregaEstado.PENDIENTE;
+
+    /** Por qué no se entregó */
+    @Column(name = "motivo")
+    private String motivo;
+
+    @Column(name = "intentos", nullable = false)
+    private Integer intentos = 0;
+
+    /** Dónde registró el conductor el resultado */
+    @Column(name = "latitud", precision = 10, scale = 7)
+    private BigDecimal latitud;
+
+    @Column(name = "longitud", precision = 10, scale = 7)
+    private BigDecimal longitud;
 
 }

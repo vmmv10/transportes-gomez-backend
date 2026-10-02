@@ -4,6 +4,7 @@ import com.transporte_gomez.erp.dto.Entrega;
 import com.transporte_gomez.erp.entity.EntregaEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.entity.RutaEntity;
+import com.transporte_gomez.erp.enums.EntregaEstado;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,8 @@ public class EntregaAdapter {
         entregaEntity.setOrdenServicio(ordenServicioEntity);
         entregaEntity.setCreadoEn(java.time.Instant.now());
         entregaEntity.setEntregado(false);
+        entregaEntity.setEstado(EntregaEstado.PENDIENTE);
+        entregaEntity.setIntentos(0);
         entregaEntity.setOrden(orden);
 
         return entregaEntity;
@@ -31,6 +34,9 @@ public class EntregaAdapter {
         entrega.setEntregado(entregaEntity.getEntregado());
         entrega.setRuta(entregaEntity.getRuta().getId());
         entrega.setOrden(entregaEntity.getOrden());
+        entrega.setEstado(entregaEntity.getEstado());
+        entrega.setMotivo(entregaEntity.getMotivo());
+        entrega.setIntentos(entregaEntity.getIntentos());
         entrega.setFecha(entregaEntity.getRuta().getFecha());
         return entrega;
     }

@@ -24,4 +24,6 @@ public class OrdenServicio {
     private Destino destino;
     private Proveedor proveedor;
     private Contrato contrato;
+    /** Código público de seguimiento (landing) */
+    private String codigoSeguimiento;
 }

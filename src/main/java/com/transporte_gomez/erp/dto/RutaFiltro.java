@@ -12,4 +12,5 @@ public class RutaFiltro {
     private Long chofer;
     private String estado;
     private Boolean conductor;
+    private Long vehiculo;
 }

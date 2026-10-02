@@ -42,4 +42,9 @@ public class UsuarioEntity {
     @Column(name = "tema_oscuro", nullable = false)
     private Boolean temaOscuro = false;
 
+    /** Organización del usuario con rol Cliente (ej. SLEP Chiloé). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private ClienteEntity cliente;
+
 }

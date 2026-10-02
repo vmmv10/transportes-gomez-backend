@@ -19,4 +19,6 @@ public interface RutaRepository extends JpaRepository<RutaEntity, Integer> {
 
     @Query("select r from RutaEntity r where r.chofer.id = ?1 and r.fecha = ?2 and r.estado = ?3 order by  r.fecha desc ")
     List<RutaEntity> findByChofer_IdAndFechaAndEstado(Long id, LocalDate fecha, String estado);
+
+    long countByVehiculo_Id(Long vehiculoId);
 }

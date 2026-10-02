@@ -61,4 +61,5 @@ public interface OrdenServicioRepository extends JpaRepository<OrdenServicioEnti
             @Param("entregado") Boolean entregado,
             Pageable pageable);
 
+    java.util.Optional<OrdenServicioEntity> findByCodigoSeguimiento(String codigoSeguimiento);
 }

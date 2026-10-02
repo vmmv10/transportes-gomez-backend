@@ -1,5 +1,7 @@
 package com.transporte_gomez.erp.controller;
 
+import com.transporte_gomez.erp.config.AlcanceCliente;
+
 import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.services.OrdenServicioPdfService;
 import com.transporte_gomez.erp.services.OrdenServicioService;
@@ -26,14 +28,17 @@ public class OrdenServicioController {
     private final OrdenServicioService ordenServicioService;
     private final UsuarioService usuarioService;
     private final OrdenServicioPdfService ordenServicioPdfService;
+    private final AlcanceCliente alcance;
 
     @GetMapping()
     public Page<OrdenServicio> getOrdenServicios(Pageable pageable, OrdenServicioFiltro filtro) {
+        alcance.clienteRestringido().ifPresent(filtro::setClienteId);
         return ordenServicioService.getOrdenServicios(pageable, filtro);
     }
 
     @GetMapping("/{id}")
     public OrdenServicio getOrdenServicio(@PathVariable Long id) {
+        alcance.verificarOrden(id);
         return ordenServicioService.getOrdenServicio(id);
     }
 
@@ -60,6 +65,7 @@ public class OrdenServicioController {
 
     @PostMapping("/{id}/pdf")
     public ResponseEntity<byte[]> generarPdf(@PathVariable Long id) {
+        alcance.verificarOrden(id);
         return ordenServicioPdfService.generarPdf(id);
     }
 
@@ -75,6 +81,13 @@ public class OrdenServicioController {
 
     @GetMapping("/reporte/items-mas-despachados")
     public List<Reporte> getItemsMasDespachados(OrdenServicioFiltro filtro) {
+        // El Cliente solo ve el reporte de sus establecimientos
+        if (alcance.esRestringido()) {
+            if (filtro.getEscuelaId() == null) {
+                return List.of();
+            }
+            alcance.verificarEscuela(filtro.getEscuelaId());
+        }
         return ordenServicioService.obtenerItemsMasDespachados(filtro);
     }
 
@@ -86,11 +99,18 @@ public class OrdenServicioController {
 
     @GetMapping("/items")
     public Page<OrdenServicioDetalle> getItems(Long item, Long escuela, String nombre, Boolean entregado, Pageable pageable) {
+        if (alcance.esRestringido()) {
+            if (escuela == null) {
+                return Page.empty(pageable);
+            }
+            alcance.verificarEscuela(escuela);
+        }
         return ordenServicioService.getItems(escuela, item, nombre, entregado, pageable);
     }
 
     @GetMapping("/ingreso/{ingreso}")
     public OrdenServicio getIngreso(@PathVariable Integer ingreso) {
+        alcance.verificarIngreso(ingreso);
         return ordenServicioService.getByIngreso(ingreso);
     }
 }

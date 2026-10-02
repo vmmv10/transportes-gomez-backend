@@ -39,6 +39,7 @@ public class RutaService {
                 .orElseThrow(() -> new RuntimeException("Ruta not found with id: " + id));
     }
 
+    @Transactional
     public Ruta create(Ruta ruta) {
         RutaEntity rutaEntity = rutaAdapter.createRuta(ruta);
         RutaEntity savedRutaEntity = rutaRepository.save(rutaEntity);
@@ -48,6 +49,7 @@ public class RutaService {
         return rutaAdapter.getRuta(savedRutaEntity);
     }
 
+    @Transactional
     public Ruta update(Integer id, Ruta ruta) {
         RutaEntity existingRuta = rutaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ruta no encontrada con el id: " + id));
@@ -73,23 +75,44 @@ public class RutaService {
         LocalDate hoyChile = LocalDate.now(ZoneId.of("America/Santiago"));
         List<RutaEntity> rutaEntityOptional = rutaRepository.findByChofer_IdAndFechaAndEstado(usuario.getId(), hoyChile, "PENDIENTE");
         if (rutaEntityOptional.isEmpty()) {
+            // Ruta de hoy ya finalizada: la app la muestra para registrar el odómetro de llegada
+            rutaEntityOptional = rutaRepository.findByChofer_IdAndFechaAndEstado(usuario.getId(), hoyChile, "FINALIZADA");
+        }
+        if (rutaEntityOptional.isEmpty()) {
             return null;
         }
         return rutaAdapter.getRuta(rutaEntityOptional.get(0));
     }
 
-    public Ruta comenzarRuta(Integer id) {
-        RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+    /** kmSalida: odómetro al salir (opcional) */
+    @Transactional
+    public Ruta comenzarRuta(Integer id, Integer kmSalida) {
+        RutaEntity rutaEntity = rutaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Ruta no encontrada con ID: " + id));
+        if ("FINALIZADA".equals(rutaEntity.getEstado())) {
+            throw new IllegalArgumentException("La ruta " + id + " ya está finalizada");
+        }
+        if (kmSalida == null && rutaEntity.getKmSalida() == null) {
+            throw new IllegalArgumentException("Registra el kilometraje de salida (odómetro) para comenzar la ruta");
+        }
+        if (kmSalida != null) {
+            RutaAdapter.aplicarKilometraje(rutaEntity, kmSalida, rutaEntity.getKmLlegada(), rutaEntity.getKilometros());
+        }
         rutaEntity.setInicio(Instant.now());
         rutaEntity.setEnTransito(true);
 
         RutaEntity savedRutaEntity = rutaRepository.save(rutaEntity);
+        entregaServices.registrarInicioRuta(id);
 
         return rutaAdapter.getRuta(savedRutaEntity);
     }
 
-    public void finalizarRuta(Integer id) {
+    /** kmLlegada: odómetro al llegar (opcional) */
+    public void finalizarRuta(Integer id, Integer kmLlegada) {
         RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
+        if (kmLlegada != null) {
+            RutaAdapter.aplicarKilometraje(rutaEntity, rutaEntity.getKmSalida(), kmLlegada, rutaEntity.getKilometros());
+        }
         rutaEntity.setFin(Instant.now());
         rutaEntity.setEnTransito(false);
         rutaEntity.setEstado("FINALIZADA");
@@ -109,9 +132,10 @@ public class RutaService {
         entregaServices.completarRuta(id);
     }
 
-    public void actualizarKilometros(Integer id, Integer kilometros) {
+    /** Kilómetros recorridos, u odómetro de salida y llegada (si vienen los dos, se calculan). */
+    public void actualizarKilometros(Integer id, Ruta ruta) {
         RutaEntity rutaEntity = rutaRepository.getReferenceById(id);
-        rutaEntity.setKilometros(kilometros);
+        RutaAdapter.aplicarKilometraje(rutaEntity, ruta.getKmSalida(), ruta.getKmLlegada(), ruta.getKilometros());
         rutaRepository.save(rutaEntity);
     }
 

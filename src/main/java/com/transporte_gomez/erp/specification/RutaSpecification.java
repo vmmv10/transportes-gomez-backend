@@ -35,6 +35,10 @@ public class RutaSpecification {
                 predicates = cb.and(predicates, cb.equal(root.get("fecha"), parseFecha(filtro.getFecha())));
             }
 
+            if (filtro.getVehiculo() != null) {
+                predicates = cb.and(predicates, cb.equal(root.get("vehiculo").get("id"), filtro.getVehiculo()));
+            }
+
             if (filtro.getConductor() != null &&  filtro.getConductor()) {
                 predicates = cb.and(predicates, cb.equal(root.get("chofer").get("id"), filtro.getChofer()));
             }

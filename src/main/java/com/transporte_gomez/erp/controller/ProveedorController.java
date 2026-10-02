@@ -47,4 +47,15 @@ public class ProveedorController {
     public void desactivateProveedor(@PathVariable Long id) {
         proveedorService.desactivateProveedor(id);
     }
+
+    @PutMapping("/{id}/activar")
+    public void activarProveedor(@PathVariable Long id) {
+        proveedorService.activarProveedor(id);
+    }
+
+    /** Une el proveedor {id} con el proveedor {destino}: sus registros pasan al destino y {id} se elimina. */
+    @PostMapping("/{id}/fusionar")
+    public Proveedor fusionar(@PathVariable Long id, @RequestParam Long destino) {
+        return proveedorService.fusionar(id, destino);
+    }
 }

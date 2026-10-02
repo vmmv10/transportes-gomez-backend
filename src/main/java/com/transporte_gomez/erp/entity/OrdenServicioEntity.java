@@ -69,6 +69,11 @@ public class OrdenServicioEntity {
     @Column(name = "ingreso")
     private Integer ingreso;
 
+    /** Código público para seguir el envío en la landing; lo genera la base al crear la orden. */
+    @org.hibernate.annotations.Generated
+    @Column(name = "codigo_seguimiento", insertable = false, updatable = false, length = 12)
+    private String codigoSeguimiento;
+
     /** Quién contrata / a quién se le cobra */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")

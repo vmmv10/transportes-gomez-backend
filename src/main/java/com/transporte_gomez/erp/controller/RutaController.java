@@ -1,5 +1,7 @@
 package com.transporte_gomez.erp.controller;
 
+import com.transporte_gomez.erp.config.AlcanceConductor;
+import com.transporte_gomez.erp.config.Roles;
 import com.transporte_gomez.erp.dto.Entrega;
 import com.transporte_gomez.erp.dto.Ruta;
 import com.transporte_gomez.erp.dto.RutaFiltro;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,19 +25,35 @@ public class RutaController {
 
     private final UsuarioService usuarioService;
     private final RutaService rutaService;
+    private final AlcanceConductor alcanceConductor;
 
     @GetMapping()
     public Page<Ruta> findAll(RutaFiltro filtro, Pageable pageable, @AuthenticationPrincipal Jwt jwt) {
         Usuario usuario = usuarioService.obtenerUsuarioLogeado(jwt);
         log.info("Usuario logeado: {}", usuario);
-        if (usuario.getRol() != null && usuario.getRol().equalsIgnoreCase("repartidor")) {
+        // El conductor solo ve sus rutas (rol de Auth0, o el rol antiguo "repartidor")
+        if (soloConductor() || (usuario.getRol() != null && usuario.getRol().equalsIgnoreCase("repartidor") && !esInterno())) {
             filtro.setChofer(usuario.getId());
         }
         return rutaService.findAll(pageable, filtro);
     }
 
+    private static boolean tieneRol(String rol) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_" + rol));
+    }
+
+    private static boolean esInterno() {
+        return tieneRol(Roles.ADMINISTRADOR) || tieneRol(Roles.OPERACIONES);
+    }
+
+    private static boolean soloConductor() {
+        return tieneRol(Roles.CONDUCTOR) && !esInterno();
+    }
+
     @GetMapping("/{id}")
     public Ruta findById(@PathVariable Integer id) {
+        alcanceConductor.verificarRuta(id);
         return rutaService.findById(id);
     }
 
@@ -64,18 +83,24 @@ public class RutaController {
         return rutaService.obtenerRutaUsuarioAndFechaHoy(usuario);
     }
 
+    /** Cuerpo opcional: {"kmSalida": 123456} */
     @PutMapping("/{id}/comenzar")
-    public Ruta comenzar(@PathVariable Integer id) {
-        return rutaService.comenzarRuta(id);
+    public Ruta comenzar(@PathVariable Integer id, @RequestBody(required = false) Ruta ruta) {
+        alcanceConductor.verificarRuta(id);
+        return rutaService.comenzarRuta(id, ruta != null ? ruta.getKmSalida() : null);
     }
 
+    /** {"kilometros": 120} o {"kmSalida": 123456, "kmLlegada": 123576} */
     @PutMapping("/{id}/kilometros")
     public void updateKilometros(@PathVariable Integer id, @RequestBody Ruta ruta) {
-        rutaService.actualizarKilometros(id, ruta.getKilometros());
+        alcanceConductor.verificarRuta(id);
+        rutaService.actualizarKilometros(id, ruta);
     }
 
+    /** Cuerpo opcional: {"kmLlegada": 123576} */
     @PutMapping("/{id}/finalizar")
-    public void finalizarRuta(@PathVariable Integer id) {
-        rutaService.finalizarRuta(id);
+    public void finalizarRuta(@PathVariable Integer id, @RequestBody(required = false) Ruta ruta) {
+        alcanceConductor.verificarRuta(id);
+        rutaService.finalizarRuta(id, ruta != null ? ruta.getKmLlegada() : null);
     }
 }

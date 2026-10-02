@@ -5,6 +5,8 @@ import com.transporte_gomez.erp.dto.*;
 import com.transporte_gomez.erp.entity.EntregaEntity;
 import com.transporte_gomez.erp.entity.OrdenServicioEntity;
 import com.transporte_gomez.erp.entity.RutaEntity;
+import com.transporte_gomez.erp.enums.EntregaEstado;
+import com.transporte_gomez.erp.enums.SeguimientoTipo;
 import com.transporte_gomez.erp.repository.EntregaRepository;
 import com.transporte_gomez.erp.repository.OrdenServicioRepository;
 import com.transporte_gomez.erp.repository.RutaRepository;
@@ -43,6 +45,7 @@ public class EntregaServices {
     private final EntregaAdapter entregaAdapter;
     private final RutaRepository rutaRepository;
     private final OrdenServicioService ordenServicioService;
+    private final SeguimientoService seguimientoService;
 
     public Page<Entrega> getEntregas(Pageable pageable, EntregaFiltro filtro) {
         return entregaRepository.findAll(EntregaSpecification.conFiltros(filtro), pageable)
@@ -143,8 +146,7 @@ public class EntregaServices {
             OrdenServicioEntity ordenServicioEntity = ordenServicioRepository.findById(ordenServicio.getId())
                     .orElseThrow(() -> new RuntimeException("Orden de servicio no encontrada: " + ordenServicio.getId()));
 
-            EntregaEntity entregaEntity = entregaAdapter.createEntrega(rutaEntity, ordenServicioEntity, i + 1);
-            entregaRepository.save(entregaEntity);
+            entregaRepository.save(nuevaOReprogramada(rutaEntity, ordenServicioEntity, i + 1));
         }
 
         // Actualizamos el estado enRuta una sola vez por cada orden
@@ -183,9 +185,8 @@ public class EntregaServices {
                 existingEntrega.setOrden(i + 1);
                 entregaRepository.save(existingEntrega);
             } else {
-                // Crear nueva entrega si no existe
-                EntregaEntity nuevaEntrega = entregaAdapter.createEntrega(rutaEntity, ordenServicioEntity, i + 1);
-                entregaRepository.save(nuevaEntrega);
+                // Crear nueva entrega si no existe (o traer la que no se pudo entregar en otra ruta)
+                entregaRepository.save(nuevaOReprogramada(rutaEntity, ordenServicioEntity, i + 1));
             }
             ordenServicioEntity.setEnRuta(true);
             ordenServicioRepository.save(ordenServicioEntity);
@@ -229,17 +230,28 @@ public class EntregaServices {
 
     @Transactional
     public void entregar(Integer id, List<MultipartFile> files) {
+        entregar(id, files, null, null);
+    }
+
+    @Transactional
+    public void entregar(Integer id, List<MultipartFile> files, BigDecimal latitud, BigDecimal longitud) {
         log.info("Entregando entrega con id: {}", id);
         EntregaEntity entregaEntity = entregaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Entrega not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Entrega no encontrada con ID: " + id));
 
         if (Boolean.TRUE.equals(entregaEntity.getEntregado())) {
-            throw new RuntimeException("Entrega ya ha sido entregada con id: " + id);
+            throw new IllegalArgumentException("La entrega " + id + " ya fue registrada como entregada");
         }
 
         entregaEntity.setEntregado(true);
+        entregaEntity.setEstado(EntregaEstado.ENTREGADO);
+        entregaEntity.setMotivo(null);
+        entregaEntity.setIntentos(valor(entregaEntity.getIntentos()) + 1);
+        entregaEntity.setLatitud(latitud);
+        entregaEntity.setLongitud(longitud);
         entregaEntity.setFecha(OffsetDateTime.now());
         entregaRepository.save(entregaEntity);
+        seguimientoService.registrar(entregaEntity, SeguimientoTipo.ENTREGADO, "Entregado", latitud, longitud, null);
         log.info("Entrega con id: {}", id);
         OrdenServicioEntity ordenServicioEntity = entregaEntity.getOrdenServicio();
         ordenServicioEntity.setEnRuta(false);
@@ -254,35 +266,116 @@ public class EntregaServices {
         }
         ordenServicioRepository.save(ordenServicioEntity);
 
-        List<EntregaEntity> entregas = entregaRepository.findByRuta_Id(entregaEntity.getRuta().getId());
-        boolean sinEntregas = true;
-        boolean primeraEntrega = true;
-        for (EntregaEntity entrega : entregas) {
-            if (Boolean.FALSE.equals(entrega.getEntregado())) {
-                sinEntregas = false;
-                break;
-            } else {
-                primeraEntrega = false;
+        revisarRuta(entregaEntity.getRuta().getId());
+    }
+
+    /**
+     * El conductor no pudo entregar (cerrado, nadie para recibir...) o se lo rechazaron.
+     * La orden queda libre para asignarla a otra ruta.
+     */
+    @Transactional
+    public void noEntregado(Integer id, EntregaResultado resultado) {
+        EntregaEntity entrega = entregaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Entrega no encontrada con ID: " + id));
+        if (Boolean.TRUE.equals(entrega.getEntregado())) {
+            throw new IllegalArgumentException("La entrega " + id + " ya fue registrada como entregada");
+        }
+        EntregaEstado estado = resultado.getEstado() == EntregaEstado.RECHAZADO ? EntregaEstado.RECHAZADO : EntregaEstado.NO_ENTREGADO;
+        String motivo = resultado.getMotivo() != null ? resultado.getMotivo().trim() : "";
+        if (motivo.isEmpty()) {
+            throw new IllegalArgumentException("Indica el motivo por el que no se entregó");
+        }
+        entrega.setEstado(estado);
+        entrega.setMotivo(motivo);
+        entrega.setIntentos(valor(entrega.getIntentos()) + 1);
+        entrega.setLatitud(resultado.getLatitud());
+        entrega.setLongitud(resultado.getLongitud());
+        entrega.setFecha(OffsetDateTime.now());
+        entregaRepository.save(entrega);
+
+        OrdenServicioEntity orden = entrega.getOrdenServicio();
+        orden.setEnRuta(false);
+        ordenServicioRepository.save(orden);
+
+        seguimientoService.registrar(entrega, estado == EntregaEstado.RECHAZADO ? SeguimientoTipo.RECHAZADO : SeguimientoTipo.NO_ENTREGADO,
+                motivo, resultado.getLatitud(), resultado.getLongitud(), null);
+        revisarRuta(entrega.getRuta().getId());
+    }
+
+    /** El conductor está cerca del destino (lo envía la app una vez por entrega). */
+    @Transactional
+    public void proximidad(Integer id, EntregaResultado resultado) {
+        EntregaEntity entrega = entregaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Entrega no encontrada con ID: " + id));
+        if (entrega.getEstado() != EntregaEstado.PENDIENTE || seguimientoService.yaRegistrado(entrega, SeguimientoTipo.CERCA_DESTINO)) {
+            return;
+        }
+        seguimientoService.registrar(entrega, SeguimientoTipo.CERCA_DESTINO, "El conductor está cerca del destino",
+                resultado.getLatitud(), resultado.getLongitud(), resultado.getDistanciaKm());
+    }
+
+    /** Eventos "en ruta" de las entregas pendientes, al comenzar la ruta. */
+    @Transactional
+    public void registrarInicioRuta(Integer rutaId) {
+        for (EntregaEntity entrega : entregaRepository.findByRuta_Id(rutaId)) {
+            if (entrega.getEstado() == EntregaEstado.PENDIENTE && !seguimientoService.yaRegistrado(entrega, SeguimientoTipo.EN_RUTA)) {
+                seguimientoService.registrar(entrega, SeguimientoTipo.EN_RUTA, "La orden salió a reparto", null, null, null);
             }
         }
+    }
 
-        if (primeraEntrega) {
-            RutaEntity rutaEntity = rutaRepository.getReferenceById(entregaEntity.getRuta().getId());
+    /**
+     * Con la primera entrega resuelta la ruta queda en tránsito; cuando todas están resueltas
+     * (entregadas o no) la ruta se finaliza. El conductor puede registrar después el odómetro de llegada.
+     */
+    private void revisarRuta(Integer rutaId) {
+        List<EntregaEntity> entregas = entregaRepository.findByRuta_Id(rutaId);
+        boolean todasResueltas = entregas.stream().allMatch(e -> e.getEstado() != null && e.getEstado().resuelta());
+        RutaEntity rutaEntity = rutaRepository.getReferenceById(rutaId);
+        if (rutaEntity.getInicio() == null) {
             rutaEntity.setInicio(Instant.now());
-            rutaEntity.setEnTransito(true);
-            rutaEntity.setEstado("PENDIENTE");
-
-            rutaRepository.save(rutaEntity);
         }
-
-        if (sinEntregas) {
-            RutaEntity rutaEntity = rutaRepository.getReferenceById(entregaEntity.getRuta().getId());
+        if (todasResueltas) {
             rutaEntity.setFin(Instant.now());
             rutaEntity.setEnTransito(false);
             rutaEntity.setEstado("FINALIZADA");
-
-            rutaRepository.save(rutaEntity);
+        } else {
+            rutaEntity.setEnTransito(true);
+            rutaEntity.setEstado("PENDIENTE");
         }
+        rutaRepository.save(rutaEntity);
+    }
+
+    /**
+     * Una orden tiene una sola entrega. Si ya tuvo una que no se pudo entregar en otra ruta,
+     * se trae a esta ruta (queda pendiente y se conserva el número de intentos).
+     */
+    private EntregaEntity nuevaOReprogramada(RutaEntity rutaEntity, OrdenServicioEntity orden, Integer posicion) {
+        Optional<EntregaEntity> anterior = entregaRepository.findByOrdenServicio_Id(orden.getId());
+        if (anterior.isEmpty()) {
+            return entregaAdapter.createEntrega(rutaEntity, orden, posicion);
+        }
+        EntregaEntity entrega = anterior.get();
+        if (entrega.getEstado() == null || !entrega.getEstado().reprogramable()) {
+            throw new IllegalArgumentException("La orden " + orden.getId() + " ya está en la ruta " + entrega.getRuta().getId());
+        }
+        Integer rutaAnterior = entrega.getRuta().getId();
+        entrega.setRuta(rutaEntity);
+        entrega.setOrden(posicion);
+        entrega.setEstado(EntregaEstado.PENDIENTE);
+        entrega.setEntregado(false);
+        entrega.setMotivo(null);
+        entrega.setLatitud(null);
+        entrega.setLongitud(null);
+        entrega.setFecha(null);
+        EntregaEntity guardada = entregaRepository.save(entrega);
+        seguimientoService.registrar(guardada, SeguimientoTipo.REPROGRAMADO,
+                "Reprogramada desde la ruta " + rutaAnterior, null, null, null);
+        return guardada;
+    }
+
+    private static int valor(Integer n) {
+        return n != null ? n : 0;
     }
 
     public List<Reporte> obtenerEntregasEntregadasVsNoEntregadas(EntregaFiltro filtro) {
@@ -349,6 +442,8 @@ public class EntregaServices {
         for (EntregaEntity entrega : entregas) {
             if (!entrega.getEntregado()) {
                 entrega.setEntregado(true);
+                entrega.setEstado(EntregaEstado.ENTREGADO);
+                entrega.setIntentos(valor(entrega.getIntentos()) + 1);
                 entrega.setFecha(OffsetDateTime.now());
                 entregaRepository.save(entrega);
 

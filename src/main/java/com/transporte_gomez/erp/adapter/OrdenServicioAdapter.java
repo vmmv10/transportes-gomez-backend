@@ -95,6 +95,7 @@ public class OrdenServicioAdapter {
             ordenServicio.setProveedor(proveedorAdpater.getProveedor(ordenServicioEntity.getProveedor()));
         }
         ordenServicio.setContrato(contratoAdapter.toDto(ordenServicioEntity.getContrato()));
+        ordenServicio.setCodigoSeguimiento(ordenServicioEntity.getCodigoSeguimiento());
 
         return ordenServicio;
     }

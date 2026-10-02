@@ -9,4 +9,6 @@ public class EscuelaFilter {
     private String rbd;
     private String director;
     private Boolean activo;
+    /** id del cliente (el usuario Cliente solo ve los suyos) */
+    private Long cliente;
 }

@@ -50,4 +50,17 @@ public class RutaEntity {
     @Column(name = "kilometros")
     private Integer kilometros;
 
-}
+    /** Vehículo de la ruta; opcional (las rutas antiguas quedan "Sin vehículo") */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehiculo_id")
+    private VehiculoEntity vehiculo;
+
+    /** Odómetro al salir */
+    @Column(name = "km_salida")
+    private Integer kmSalida;
+
+    /** Odómetro al llegar */
+    @Column(name = "km_llegada")
+    private Integer kmLlegada;
+
+}

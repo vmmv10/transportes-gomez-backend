@@ -1,5 +1,7 @@
 package com.transporte_gomez.erp.controller;
 
+import com.transporte_gomez.erp.config.AlcanceCliente;
+
 import com.transporte_gomez.erp.dto.Escuela;
 import com.transporte_gomez.erp.dto.EscuelaFilter;
 import com.transporte_gomez.erp.dto.Establecimiento;
@@ -18,19 +20,26 @@ import java.util.List;
 public class EscuelaController {
 
     private EscuelasService escuelasService;
+    private AlcanceCliente alcance;
 
     @GetMapping
     public Page<Escuela> getEscuelas(Pageable pageable, EscuelaFilter escuelaFilter) {
+        alcance.clienteRestringido().ifPresent(escuelaFilter::setCliente);
         return escuelasService.findAll(escuelaFilter, pageable);
     }
 
     @GetMapping("/list")
     public List<Escuela> getAllEscuelas() {
-        return escuelasService.findAll();
+        return alcance.clienteRestringido()
+                .map(clienteId -> escuelasService.findAll().stream()
+                        .filter(e -> clienteId.equals(e.getClienteId()))
+                        .toList())
+                .orElseGet(escuelasService::findAll);
     }
 
     @GetMapping("/{id}")
     public Escuela getEscuelaById(@PathVariable Long id) {
+        alcance.verificarEscuela(id);
         return escuelasService.findById(id);
     }
 
